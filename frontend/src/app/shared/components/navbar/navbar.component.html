@@ -1,0 +1,243 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <a routerLink="/" class="navbar-brand">
+      <div class="brand-logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Vintage newspaper stack icon -->
+          <rect x="2" y="10" width="32" height="24" fill="currentColor" stroke="currentColor" stroke-width="2"/>
+          <rect x="6" y="6" width="32" height="24" fill="none" stroke="currentColor" stroke-width="2"/>
+          <!-- Horizontal lines representing text -->
+          <line x1="8" y1="16" x2="28" y2="16" stroke="#f9f7f4" stroke-width="2"/>
+          <line x1="8" y1="20" x2="28" y2="20" stroke="#f9f7f4" stroke-width="2"/>
+          <line x1="8" y1="24" x2="22" y2="24" stroke="#f9f7f4" stroke-width="2"/>
+          <!-- "01" badge -->
+          <circle cx="32" cy="12" r="6" fill="#f9f7f4" stroke="currentColor" stroke-width="1.5"/>
+          <text x="32" y="15" font-family="serif" font-size="8" font-weight="900" text-anchor="middle" fill="currentColor">01</text>
+        </svg>
+      </div>
+      <div class="brand-text-container">
+        <span class="brand-text">The Dispatch</span>
+        <span class="brand-subtitle">No. 01</span>
+      </div>
+    </a>
+
+    @if (authService.isLoggedIn()) {
+      <!-- Hamburger Menu Button (Mobile Only) -->
+      <button class="hamburger-menu" (click)="toggleMobileMenu()" [class.active]="mobileMenuOpen()">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <!-- Navigation Tabs -->
+      <div class="navbar-tabs">
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span>Feed</span>
+        </a>
+        <a routerLink="/my-blog" routerLinkActive="active" class="nav-tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span>My Block</span>
+        </a>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="navbar-actions">
+        <button class="action-button theme-toggle" (click)="toggleTheme()" [attr.aria-label]="themeService.isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
+          @if (themeService.isDarkMode()) {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+            </svg>
+            <span>Light</span>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 2c-1.05 0-2.05.16-3 .46 4.06 1.27 7 5.06 7 9.54 0 4.48-2.94 8.27-7 9.54.95.3 1.95.46 3 .46 5.52 0 10-4.48 10-10S14.52 2 9 2z"/>
+            </svg>
+            <span>Dark</span>
+          }
+        </button>
+        <div class="notification-menu">
+          <button class="notification-button" (click)="toggleNotifDropdown()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+            @if (unreadCount() > 0) {
+              <span class="notification-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+            }
+          </button>
+
+          @if (notifDropdownOpen()) {
+            <div class="notification-dropdown">
+              <div class="notification-header">
+                <h3>Notifications</h3>
+                <button class="btn-view-all" (click)="goToNotifications()">View All</button>
+              </div>
+
+              @if (loadingNotifications()) {
+                <div class="loading-state">
+                  <div class="spinner"></div>
+                  <p>Loading...</p>
+                </div>
+              } @else {
+                @if (notifications().length === 0) {
+                  <div class="empty-state">
+                    <div class="empty-icon">🔔</div>
+                    <p>No notifications yet</p>
+                  </div>
+                } @else {
+                  <div class="notifications-list">
+                    @for (notification of notifications(); track notification.id) {
+                      <div
+                        class="notification-item"
+                        [class.unread]="!notification.read"
+                        (click)="handleNotificationClick(notification)">
+
+                        <div class="notification-avatar">
+                          @if (notification.actorAvatar && !isAvatarFailed(notification.actorAvatar)) {
+                            <img
+                              [src]="notification.actorAvatar"
+                              [alt]="notification.actorUsername"
+                              (error)="onAvatarError(notification.actorAvatar)">
+                          } @else {
+                            <div class="avatar-placeholder">
+                              {{ notification.actorUsername.charAt(0).toUpperCase() }}
+                            </div>
+                          }
+                        </div>
+
+                        <div class="notification-content">
+                          <div class="notification-icon" [innerHTML]="getNotificationIconSvg(notification.type)"></div>
+                          <p class="notification-message">{{ notification.message }}</p>
+                          <span class="notification-time">{{ getTimeAgo(notification.createdAt) }}</span>
+                        </div>
+
+                        @if (!notification.read) {
+                          <div class="unread-dot"></div>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <div class="notification-footer">
+                    <button class="btn-clear-all" (click)="markAllAsRead()">
+                      Mark All as Read
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+
+        <!-- User Avatar with Dropdown -->
+        <div class="user-menu">
+          <button class="avatar-button" (click)="toggleDropdown()">
+            @if (getAvatarUrl() && !isAvatarFailed(getAvatarUrl())) {
+              <img
+                [src]="getAvatarUrl()"
+                alt="Avatar"
+                class="user-avatar-img"
+                (error)="onAvatarError(getAvatarUrl())">
+            } @else {
+              <div class="user-avatar">
+                {{ getUserInitial() }}
+              </div>
+            }
+          </button>
+
+          @if (dropdownOpen()) {
+            <div class="user-dropdown">
+              <a routerLink="/profile" class="dropdown-item" (click)="closeDropdown()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <span>Profile</span>
+              </a>
+              <a routerLink="/edit-profile" class="dropdown-item" (click)="closeDropdown()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+                <span>Edit Profile</span>
+              </a>
+              <a routerLink="/my-reports" class="dropdown-item" (click)="closeDropdown()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                </svg>
+                <span>Reports</span>
+              </a>
+              @if (isAdmin()) {
+                <a routerLink="/admin" class="dropdown-item" (click)="closeDropdown()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                  </svg>
+                  <span>Admin Dashboard</span>
+                </a>
+              }
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" (click)="logout(); closeDropdown()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="navbar-actions">
+        <a routerLink="/login" class="action-button">Sign In</a>
+        <a routerLink="/register" class="btn-primary-nav">Get Started</a>
+      </div>
+
+      <!-- Mobile Menu Overlay -->
+      @if (mobileMenuOpen()) {
+        <div class="mobile-menu-overlay" (click)="closeMobileMenu()">
+          <div class="mobile-menu" (click)="$event.stopPropagation()">
+            <div class="mobile-menu-header">
+              <h3>Menu</h3>
+              <button class="close-mobile-menu" (click)="closeMobileMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+              </button>
+            </div>
+            <nav class="mobile-nav">
+              <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="mobile-nav-item" (click)="closeMobileMenu()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span>Feed</span>
+              </a>
+              <a routerLink="/my-blog" routerLinkActive="active" class="mobile-nav-item" (click)="closeMobileMenu()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <span>My Block</span>
+              </a>
+              <div class="mobile-nav-divider"></div>
+              <button class="mobile-nav-item" (click)="toggleTheme(); closeMobileMenu()">
+                @if (themeService.isDarkMode()) {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+                  </svg>
+                  <span>Light Mode</span>
+                } @else {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 2c-1.05 0-2.05.16-3 .46 4.06 1.27 7 5.06 7 9.54 0 4.48-2.94 8.27-7 9.54.95.3 1.95.46 3 .46 5.52 0 10-4.48 10-10S14.52 2 9 2z"/>
+                  </svg>
+                  <span>Dark Mode</span>
+                }
+              </button>
+            </nav>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</nav>

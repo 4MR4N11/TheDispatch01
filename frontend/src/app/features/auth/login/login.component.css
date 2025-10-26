@@ -1,0 +1,413 @@
+/* Login Component - Vintage Newspaper Design */
+
+.auth-page {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 1.5rem,
+    rgba(0,0,0,.02) 1.5rem,
+    rgba(0,0,0,.02) calc(1.5rem + 1px)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  max-width: 1400px;
+  width: 100%;
+  align-items: start;
+}
+
+/* Hero Section */
+.auth-hero {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-content {
+  max-width: 600px;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 4px double var(--color-text-primary);
+}
+
+.brand-icon {
+  width: 60px;
+  height: 60px;
+  color: var(--color-text-primary);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-name {
+  font-size: 3.5rem;
+  font-weight: 900;
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.hero-tagline {
+  font-size: 1.75rem;
+  font-weight: 900;
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.hero-description {
+  font-size: 1rem;
+  font-family: var(--font-serif);
+  color: var(--color-text-secondary);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+  text-indent: 0;
+}
+
+/* Features Grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.feature-card {
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-border);
+  border-top: 3px solid var(--color-text-primary);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background: var(--color-bg-secondary);
+  border-top-width: 4px;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-text-primary);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  border: 2px solid var(--color-bg-primary);
+  box-shadow: 0 0 0 1px var(--color-text-primary);
+}
+
+.feature-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.feature-desc {
+  font-size: 0.875rem;
+  font-family: var(--font-serif);
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-indent: 0;
+}
+
+/* Demo Accounts */
+.demo-accounts {
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-border);
+  border-left: 4px solid var(--color-text-primary);
+  padding: 1.5rem;
+}
+
+.demo-accounts h3 {
+  font-size: 1.125rem;
+  font-weight: 900;
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.demo-accounts p {
+  font-size: 0.875rem;
+  font-family: var(--font-serif);
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+  text-indent: 0;
+}
+
+.demo-accounts strong {
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+.demo-note {
+  margin-top: 1rem;
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
+/* Form Section */
+.auth-form-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form-card {
+  background: var(--color-bg-primary);
+  border: 3px double var(--color-text-primary);
+  border-radius: 0;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 480px;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.form-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--color-text-primary);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  border: 3px solid var(--color-bg-primary);
+  box-shadow: 0 0 0 2px var(--color-text-primary);
+}
+
+.form-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.form-subtitle {
+  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Error Alert */
+.error-alert {
+  background: rgba(139, 44, 44, 0.1);
+  color: #8B2C2C;
+  padding: 1rem;
+  border-radius: 0;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  border: 2px solid #8B2C2C;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Form Fields */
+.form-field {
+  margin-bottom: 1.5rem;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 0;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  font-family: var(--font-serif);
+  background: var(--color-bg-primary);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-field:disabled {
+  background: var(--color-bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 1rem;
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  border: 2px solid var(--color-text-primary);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form Footer */
+.form-footer {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.form-footer p {
+  color: var(--color-text-secondary);
+  font-family: var(--font-serif);
+  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+  text-indent: 0;
+}
+
+.btn-link {
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-text-primary);
+  color: var(--color-text-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-link:hover {
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 0;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .auth-container {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .auth-hero {
+    order: 2;
+  }
+
+  .auth-form-section {
+    order: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-page {
+    padding: 1rem;
+  }
+
+  .brand-name {
+    font-size: 2.5rem;
+  }
+
+  .hero-tagline {
+    font-size: 1.25rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-form-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .form-title {
+    font-size: 1.75rem;
+  }
+}

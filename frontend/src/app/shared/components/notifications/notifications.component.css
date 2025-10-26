@@ -1,0 +1,263 @@
+/* Notifications - Vintage Newspaper Design */
+
+.notifications-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 450px;
+  width: calc(100% - 40px);
+}
+
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-bg-primary);
+  border: 3px solid var(--color-text-primary);
+  border-left-width: 6px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+  font-family: var(--font-sans);
+  position: relative;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(500px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-success {
+  border-color: #2d5016;
+  border-left-color: #2d5016;
+  background: #f0f7ed;
+}
+
+.notification-error {
+  border-color: #8B2C2C;
+  border-left-color: #8B2C2C;
+  background: #fef2f2;
+}
+
+.notification-warning {
+  border-color: #92400e;
+  border-left-color: #92400e;
+  background: #fffbeb;
+}
+
+.notification-info {
+  border-color: #1e3a8a;
+  border-left-color: #1e3a8a;
+  background: #eff6ff;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+}
+
+.notification-success .notification-icon {
+  color: #2d5016;
+}
+
+.notification-error .notification-icon {
+  color: #8B2C2C;
+}
+
+.notification-warning .notification-icon {
+  color: #92400e;
+}
+
+.notification-info .notification-icon {
+  color: #1e3a8a;
+}
+
+.notification-content {
+  color: var(--color-text-primary);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notification-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.notification-success .notification-title {
+  color: #2d5016;
+}
+
+.notification-error .notification-title {
+  color: #8B2C2C;
+}
+
+.notification-warning .notification-title {
+  color: #92400e;
+}
+
+.notification-info .notification-title {
+  color: #1e3a8a;
+}
+
+.notification-message {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.notification-success .notification-message {
+  color: #1a2e0d;
+}
+
+.notification-error .notification-message {
+  color: #5a1818;
+}
+
+.notification-warning .notification-message {
+  color: #5c2707;
+}
+
+.notification-info .notification-message {
+  color: #0f2557;
+}
+
+.notification-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+  margin-top: 2px;
+}
+
+.notification-close:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Progress bar for auto-dismiss */
+.notification::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.3;
+  animation: progress 5s linear;
+}
+
+.notification-success::after {
+  background: #2d5016;
+}
+
+.notification-error::after {
+  background: #8B2C2C;
+}
+
+.notification-warning::after {
+  background: #92400e;
+}
+
+.notification-info::after {
+  background: #1e3a8a;
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notifications-container {
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    width: auto;
+  }
+
+  .notification {
+    padding: 12px;
+    border-width: 2px;
+    border-left-width: 4px;
+  }
+
+  .notification-title {
+    font-size: 0.8125rem;
+  }
+
+  .notification-message {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notifications-container {
+    top: 60px;
+    right: 0.5rem;
+    left: 0.5rem;
+    gap: 8px;
+  }
+
+  .notification {
+    padding: 10px;
+    border-width: 2px;
+    border-left-width: 3px;
+  }
+
+  .notification-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .notification-title {
+    font-size: 0.75rem;
+  }
+
+  .notification-message {
+    font-size: 0.8125rem;
+  }
+
+  .notification-close {
+    width: 20px;
+    height: 20px;
+  }
+}

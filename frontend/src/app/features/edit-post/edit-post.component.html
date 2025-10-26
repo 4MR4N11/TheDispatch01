@@ -1,0 +1,134 @@
+<div class="edit-post-page">
+  <div class="edit-post-container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">Edit Post</h1>
+        <p class="page-subtitle">Update your story</p>
+      </div>
+      <button class="btn-cancel" (click)="cancel()" [disabled]="updating()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+        Cancel
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-container">
+        <div class="spinner-large"></div>
+        <p>Loading post...</p>
+      </div>
+    } @else {
+      <!-- Main Content -->
+      <div class="edit-post-content">
+        <!-- Title Input -->
+        <div class="form-section">
+          <label class="form-label">Title</label>
+          <input
+            type="text"
+            class="title-input"
+            placeholder="Enter your post title..."
+            [(ngModel)]="title"
+            [disabled]="updating()"
+            maxlength="200"
+          />
+        </div>
+
+        <!-- Rich Text Editor -->
+        <div class="form-section editor-section">
+          <label class="form-label">Content</label>
+          <div #editorHolder class="editorjs-container"></div>
+        </div>
+
+        <!-- Media Section -->
+        <div class="form-section media-section">
+          <label class="form-label">Media (Optional)</label>
+
+          <!-- File Preview -->
+          @if (selectedFile() && filePreviewUrl()) {
+            <div class="media-preview">
+              <img [src]="filePreviewUrl()" alt="Preview" class="preview-image" />
+              <button type="button" class="btn-remove-preview" (click)="clearFile()" [disabled]="updating()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+                Remove
+              </button>
+            </div>
+          }
+
+          <!-- URL Preview -->
+          @if (mediaUrl() && !selectedFile()) {
+            <div class="media-preview">
+              <img [src]="mediaUrl()" alt="Preview" class="preview-image" />
+              <button type="button" class="btn-remove-preview" (click)="removeMedia()" [disabled]="updating()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+                Remove
+              </button>
+            </div>
+          }
+
+          <!-- Upload Options -->
+          <div class="upload-options">
+            <input
+              type="file"
+              #fileInput
+              accept="image/*,video/*"
+              (change)="onFileSelected($event)"
+              style="display: none"
+            />
+            <button
+              type="button"
+              class="btn-upload"
+              (click)="fileInput.click()"
+              [disabled]="updating()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/>
+              </svg>
+              <span>{{ selectedFile() || mediaUrl() ? 'Change Media' : 'Upload Image/Video' }}</span>
+            </button>
+
+            @if (selectedFile()) {
+              <div class="file-info">
+                <span class="file-name">{{ selectedFile()?.name }}</span>
+              </div>
+            }
+
+            @if (!selectedFile()) {
+              <div class="url-input-wrapper">
+                <input
+                  type="text"
+                  class="url-input"
+                  placeholder="Or paste media URL..."
+                  [(ngModel)]="mediaUrl"
+                  [disabled]="updating()"
+                />
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="page-footer">
+        <button class="btn-cancel-footer" (click)="cancel()" [disabled]="updating()">
+          Cancel
+        </button>
+        <button class="btn-publish" (click)="updatePost()" [disabled]="updating() || uploading()">
+          @if (updating() || uploading()) {
+            <span class="spinner"></span>
+            {{ uploading() ? 'Uploading...' : 'Updating...' }}
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+            </svg>
+            Update Post
+          }
+        </button>
+      </div>
+    }
+  </div>
+</div>

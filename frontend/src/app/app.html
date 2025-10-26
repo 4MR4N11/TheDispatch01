@@ -1,0 +1,15 @@
+<app-notifications></app-notifications>
+<app-confirmation-modal></app-confirmation-modal>
+
+<div class="app-container">
+  @if (authInitialized()) {
+    @if (authService.isLoggedIn()) {
+      <app-navbar></app-navbar>
+    }
+    <router-outlet />
+  } @else {
+    <div class="loading-spinner">
+      <p>Loading application...</p>
+    </div>
+  }
+</div>

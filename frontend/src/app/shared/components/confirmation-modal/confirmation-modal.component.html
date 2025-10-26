@@ -1,0 +1,30 @@
+@if (modalService.isOpen()) {
+  <div class="modal-overlay" (click)="cancel()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="modal-header">
+        <h2 class="modal-title">{{ modalService.title() }}</h2>
+        <button class="btn-close" (click)="cancel()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="modal-content">
+        <p class="modal-message">{{ modalService.message() }}</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="cancel()">
+          {{ modalService.cancelText() }}
+        </button>
+        <button class="btn-confirm" (click)="confirm()">
+          {{ modalService.confirmText() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

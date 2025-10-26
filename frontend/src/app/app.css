@@ -1,0 +1,6 @@
+/* App Component Styles - Cleaned up for Medium-inspired design */
+
+.app-container {
+  min-height: 100vh;
+  background: var(--color-bg-secondary);
+}

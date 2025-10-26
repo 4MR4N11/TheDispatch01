@@ -1,0 +1,259 @@
+<div class="admin-page">
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1 class="admin-title">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+        </svg>
+        Admin Dashboard
+      </h1>
+      <p class="admin-subtitle">Manage users, posts, and reports</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button
+        class="tab-button"
+        [class.active]="activeTab() === 'reports'"
+        (click)="switchTab('reports')">
+        Reports
+      </button>
+      <button
+        class="tab-button"
+        [class.active]="activeTab() === 'users'"
+        (click)="switchTab('users')">
+        Users
+      </button>
+      <button
+        class="tab-button"
+        [class.active]="activeTab() === 'posts'"
+        (click)="switchTab('posts')">
+        Posts
+      </button>
+    </div>
+
+    <!-- Reports Tab -->
+    @if (activeTab() === 'reports') {
+      @if (loading()) {
+        <div class="loading-container">
+          <div class="spinner-large"></div>
+          <p>Loading reports...</p>
+        </div>
+      } @else if (reports().length === 0) {
+        <div class="empty-state">
+          <p>No reports to review</p>
+        </div>
+      } @else {
+        <div class="reports-grid">
+          @for (report of reports(); track report.id) {
+            <div class="report-card">
+              <div class="report-header">
+                <div class="report-type-badge" [class]="report.type === 'USER_REPORT' ? 'type-user' : 'type-post'">
+                  {{ report.type }}
+                </div>
+                <span class="report-status" [class]="getStatusClass(report.status)">
+                  {{ report.status }}
+                </span>
+              </div>
+
+              <div class="report-body">
+                @if (report.type === 'USER_REPORT') {
+                  <div class="report-info">
+                    <strong>Reported User:</strong>
+                    <a class="link" (click)="viewProfile(report.reportedUsername)">
+                      {{ report.reportedUsername }}
+                    </a>
+                  </div>
+                } @else {
+                  <div class="report-info">
+                    <strong>Post Title:</strong>
+                    @if (report.reportedPostId) {
+                      <a class="link" (click)="viewPost(report.reportedPostId)">
+                        {{ report.reportedPostTitle }}
+                      </a>
+                    } @else {
+                      {{ report.reportedPostTitle }}
+                    }
+                  </div>
+                }
+
+                <div class="report-info">
+                  <strong>Reporter:</strong> {{ report.reporterUsername }}
+                </div>
+
+                <div class="report-info">
+                  <strong>Reason:</strong>
+                  <p class="reason-text">{{ report.reason }}</p>
+                </div>
+
+                <div class="report-info">
+                  <strong>Submitted:</strong> {{ formatDate(report.createdAt) }}
+                </div>
+
+                @if (report.handledAt) {
+                  <div class="report-info">
+                    <strong>Handled:</strong> {{ formatDate(report.handledAt) }}
+                  </div>
+                }
+
+                @if (report.handledByAdminUsername) {
+                  <div class="report-info">
+                    <strong>Handled By:</strong> {{ report.handledByAdminUsername }}
+                  </div>
+                }
+
+                @if (report.adminResponse) {
+                  <div class="admin-response-box">
+                    <strong>Admin Response:</strong>
+                    <p>{{ report.adminResponse }}</p>
+                  </div>
+                }
+              </div>
+
+              @if (report.status === 'PENDING') {
+                <div class="report-actions">
+                  <button class="btn-approve" (click)="approveReport(report.id)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    Approve
+                  </button>
+                  <button class="btn-reject" (click)="rejectReport(report.id)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                    Reject
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- Users Tab -->
+    @if (activeTab() === 'users') {
+      @if (loading()) {
+        <div class="loading-container">
+          <div class="spinner-large"></div>
+          <p>Loading users...</p>
+        </div>
+      } @else if (users().length === 0) {
+        <div class="empty-state">
+          <p>No users found</p>
+        </div>
+      } @else {
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Posts</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr>
+                  <td>
+                    <div class="user-cell" (click)="viewProfile(user.username)" style="cursor: pointer;">
+                      @if (getAvatarUrl(user.avatar) && !isAvatarFailed(user.avatar)) {
+                        <img
+                          [src]="getAvatarUrl(user.avatar)"
+                          alt="{{ user.username }}"
+                          class="user-avatar-img"
+                          (error)="onAvatarError(user.avatar || '')">
+                      } @else {
+                        <div class="user-avatar">{{ getUserInitial(user.username) }}</div>
+                      }
+                      <div class="user-details">
+                        <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                        <div class="user-username">@{{ user.username }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span class="role-badge" [class.admin-role]="user.role === 'ADMIN'">
+                      {{ user.role }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class.banned]="user.banned">
+                      {{ user.banned ? 'Banned' : 'Active' }}
+                    </span>
+                  </td>
+                  <td>{{ user.posts.length || 0 }}</td>
+                  <td>
+                    <div class="action-buttons">
+                      @if (user.role !== 'ADMIN') {
+                        @if (user.banned) {
+                          <button class="btn-unban" (click)="unbanUser(user.id)">Unban</button>
+                        } @else {
+                          <button class="btn-ban" (click)="banUser(user.id)">Ban</button>
+                        }
+                        <button class="btn-delete" (click)="deleteUser(user.id)">Delete</button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- Posts Tab -->
+    @if (activeTab() === 'posts') {
+      @if (loading()) {
+        <div class="loading-container">
+          <div class="spinner-large"></div>
+          <p>Loading posts...</p>
+        </div>
+      } @else if (posts().length === 0) {
+        <div class="empty-state">
+          <p>No posts found</p>
+        </div>
+      } @else {
+        <div class="posts-grid">
+          @for (post of posts(); track post.id) {
+            <div class="post-card" [class.hidden-post]="post.hidden">
+              <div class="post-header-row">
+                <div class="post-author-info">
+                  <div class="post-author">@{{ post.author }}</div>
+                  <div class="post-date">{{ formatDate(post.created_at) }}</div>
+                </div>
+                @if (post.hidden) {
+                  <span class="hidden-badge">Hidden</span>
+                }
+              </div>
+
+              <h3 class="post-title">{{ post.title }}</h3>
+              <p class="post-content">{{ getExcerpt(post.content) }}</p>
+
+              <div class="post-stats">
+                <span>{{ post.likeCount }} likes</span>
+                <span>{{ post.comments.length || 0 }} comments</span>
+              </div>
+
+              <div class="post-actions">
+                <button class="btn-view" (click)="viewPost(post.id)">View</button>
+                @if (post.hidden) {
+                  <button class="btn-unhide" (click)="unhidePost(post.id)">Unhide</button>
+                } @else {
+                  <button class="btn-hide" (click)="hidePost(post.id)">Hide</button>
+                }
+                <button class="btn-delete-post" (click)="deletePost(post.id)">Delete</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

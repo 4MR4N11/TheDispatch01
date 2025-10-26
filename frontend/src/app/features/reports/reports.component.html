@@ -1,0 +1,127 @@
+<div class="reports-page">
+  <div class="reports-container">
+    <h1 class="page-title">My Reports</h1>
+
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'user'"
+      (click)="setActiveTab('user')"
+    >
+      User Reports ({{ userReports().length }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'post'"
+      (click)="setActiveTab('post')"
+    >
+      Post Reports ({{ postReports().length }})
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <p>Loading reports...</p>
+    </div>
+  } @else {
+    <div class="reports-content">
+      @if (activeTab() === 'user') {
+        <div class="reports-list">
+          @if (userReports().length === 0) {
+            <p class="no-reports">No user reports found</p>
+          } @else {
+            @for (report of userReports(); track report.id) {
+              <div class="report-card">
+                <div class="report-header">
+                  <span class="report-type">User Report</span>
+                  <span class="report-status" [class]="getStatusClass(report.status)">
+                    {{ report.status }}
+                  </span>
+                </div>
+                <div class="report-body">
+                  <div class="report-info">
+                    <strong>Reported User:</strong> {{ report.reportedUsername }}
+                  </div>
+                  <div class="report-info">
+                    <strong>Reason:</strong> {{ report.reason }}
+                  </div>
+                  <div class="report-info">
+                    <strong>Submitted:</strong> {{ formatDate(report.createdAt) }}
+                  </div>
+                  @if (report.handledAt) {
+                    <div class="report-info">
+                      <strong>Handled:</strong> {{ formatDate(report.handledAt) }}
+                    </div>
+                  }
+                  @if (report.handledByAdminUsername) {
+                    <div class="report-info">
+                      <strong>Handled By:</strong> {{ report.handledByAdminUsername }}
+                    </div>
+                  }
+                  @if (report.adminResponse) {
+                    <div class="report-response">
+                      <strong>Admin Response:</strong>
+                      <p>{{ report.adminResponse }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      } @else {
+        <div class="reports-list">
+          @if (postReports().length === 0) {
+            <p class="no-reports">No post reports found</p>
+          } @else {
+            @for (report of postReports(); track report.id) {
+              <div class="report-card">
+                <div class="report-header">
+                  <span class="report-type">Post Report</span>
+                  <span class="report-status" [class]="getStatusClass(report.status)">
+                    {{ report.status }}
+                  </span>
+                </div>
+                <div class="report-body">
+                  <div class="report-info">
+                    <strong>Post Title:</strong>
+                    @if (report.reportedPostId) {
+                      <a (click)="viewPost(report.reportedPostId)" class="post-link">
+                        {{ report.reportedPostTitle }}
+                      </a>
+                    } @else {
+                      {{ report.reportedPostTitle }}
+                    }
+                  </div>
+                  <div class="report-info">
+                    <strong>Reason:</strong> {{ report.reason }}
+                  </div>
+                  <div class="report-info">
+                    <strong>Submitted:</strong> {{ formatDate(report.createdAt) }}
+                  </div>
+                  @if (report.handledAt) {
+                    <div class="report-info">
+                      <strong>Handled:</strong> {{ formatDate(report.handledAt) }}
+                    </div>
+                  }
+                  @if (report.handledByAdminUsername) {
+                    <div class="report-info">
+                      <strong>Handled By:</strong> {{ report.handledByAdminUsername }}
+                    </div>
+                  }
+                  @if (report.adminResponse) {
+                    <div class="report-response">
+                      <strong>Admin Response:</strong>
+                      <p>{{ report.adminResponse }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  }
+  </div>
+</div>

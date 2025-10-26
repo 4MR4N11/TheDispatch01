@@ -1,0 +1,345 @@
+<div class="post-detail-page">
+  @if (post(); as p) {
+    <div class="post-detail-container">
+      <!-- Post Content -->
+      <article class="post-detail-card">
+        <!-- Post Header with Author Info -->
+        <div class="post-detail-header">
+          <div class="author-section">
+            @if (getPostAuthorAvatar() && !isAvatarFailed(p.authorAvatar)) {
+              <img
+                [src]="getPostAuthorAvatar()"
+                [alt]="p.author"
+                class="author-avatar-img"
+                (click)="viewProfile(p.author)"
+                (error)="onAvatarError(p.authorAvatar)">
+            } @else {
+              <div class="author-avatar" (click)="viewProfile(p.author)">
+                {{ getUserInitial(p.author) }}
+              </div>
+            }
+            <div class="author-details">
+              <div class="author-name" (click)="viewProfile(p.author)">{{ p.author }}</div>
+              <div class="post-metadata">
+                <span>{{ getTimeAgo(p.created_at) }}</span>
+                <span class="separator">·</span>
+                <span>{{ getReadingTime(p.content) }}</span>
+                <span class="separator">·</span>
+                <span>{{ p.created_at | date: 'MMM d, yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Title -->
+        <h1 class="post-detail-title">{{ p.title }}</h1>
+
+        <!-- Post Media -->
+        @if (p.media_url && p.media_type === 'image') {
+          <div class="post-media-container">
+            <img [src]="p.media_url" [alt]="p.title" class="post-detail-media" />
+          </div>
+        }
+        @if (p.media_url && p.media_type === 'video') {
+          <div class="post-media-container">
+            <video [src]="p.media_url" class="post-detail-media" controls></video>
+          </div>
+        }
+
+        <!-- Post Content -->
+        <div class="post-detail-content">
+          @for (block of blocks(); track $index) {
+
+            <!-- Headers -->
+            @if (block.type === 'header' && block.data.level === 1) {
+              <h1>{{ block.data.text }}</h1>
+            }
+            @if (block.type === 'header' && block.data.level === 2) {
+              <h2>{{ block.data.text }}</h2>
+            }
+            @if (block.type === 'header' && block.data.level === 3) {
+              <h3>{{ block.data.text }}</h3>
+            }
+
+            <!-- Paragraphs -->
+            @if (block.type === 'paragraph') {
+              <p>{{ block.data.text }}</p>
+            }
+
+            <!-- Lists -->
+            @if (block.type === 'list' && block.data.style === 'unordered') {
+              <ul>
+                @for (item of block.data.items; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            }
+            @if (block.type === 'list' && block.data.style === 'ordered') {
+              <ol>
+                @for (item of block.data.items ; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ol>
+            }
+
+            <!-- Images -->
+            @if (block.type === 'image') {
+              <div class="post-image">
+                <img [src]="block.data.file.url" [alt]="block.data.caption" style="max-width:100%;" />
+                @if (block.data.caption) {
+                  <p>{{ block.data.caption }}</p>
+                }
+              </div>
+            }
+
+            <!-- Videos -->
+            @if (block.type === 'video') {
+              <div class="post-video">
+                <video controls [src]="block.data.file.url" style="max-width:100%; border-radius: 8px;"></video>
+                @if (block.data.caption) {
+                  <p>{{ block.data.caption }}</p>
+                }
+              </div>
+            }
+          }
+        </div>
+
+
+        <!-- Post Actions Bar -->
+        <div class="post-actions-bar">
+          <div class="actions-left">
+            <button
+              class="action-btn"
+              [class.liked]="isLiked()"
+              (click)="toggleLike()"
+              [disabled]="togglingLike()">
+              @if (togglingLike()) {
+                <span class="spinner-small"></span>
+              } @else {
+                <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="isLiked() ? '#8B6914' : 'currentColor'">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              }
+              <span>{{ p.likeCount }}</span>
+            </button>
+            <button class="action-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+              </svg>
+              <span>{{ p.comments.length }}</span>
+            </button>
+          </div>
+          <div class="actions-right">
+            @if (isPostAuthor()) {
+              <button class="action-btn-text" (click)="editPost(p.id, $event)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+                <span>Edit</span>
+              </button>
+            }
+            <button class="action-btn-text" (click)="openReportModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/>
+              </svg>
+              <span>Report</span>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Comments Section -->
+      <div class="comments-section">
+        <h2 class="comments-title">
+          Responses
+          <span class="comments-count">({{ p.comments.length }})</span>
+        </h2>
+
+        <!-- Add Comment Form -->
+        <form class="add-comment-form" (ngSubmit)="addComment()">
+          @if (getCurrentUserAvatar() && !isAvatarFailed(currentUser()?.avatar)) {
+            <img
+              [src]="getCurrentUserAvatar()"
+              [alt]="currentUser()?.username"
+              class="comment-avatar-img"
+              (error)="onAvatarError(currentUser()?.avatar || '')">
+          } @else {
+            <div class="comment-avatar">
+              {{ getUserInitial(currentUser()?.username || '') }}
+            </div>
+          }
+          <div class="comment-input-wrapper">
+            <textarea
+              class="comment-textarea"
+              placeholder="Share your thoughts..."
+              [ngModel]="commentContent()"
+              (ngModelChange)="commentContent.set($event)"
+              name="commentContent"
+              rows="3"
+              [disabled]="submittingComment()">
+            </textarea>
+            <div class="comment-form-actions">
+              <button class="btn-respond" type="submit" [disabled]="submittingComment() || !commentContent().trim()">
+                @if (submittingComment()) {
+                  <span class="spinner-small"></span> Publishing...
+                } @else {
+                  Respond
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Comments List -->
+        @if (p.comments.length > 0) {
+          <div class="comments-list">
+            @for (comment of p.comments; track comment.id) {
+              <div class="comment-item">
+                @if (getAvatarUrl(comment.authorAvatar) && !isAvatarFailed(comment.authorAvatar)) {
+                  <img
+                    [src]="getAvatarUrl(comment.authorAvatar)"
+                    [alt]="comment.authorUsername"
+                    class="comment-avatar-img"
+                    (click)="viewProfile(comment.authorUsername)"
+                    (error)="onAvatarError(comment.authorAvatar)">
+                } @else {
+                  <div class="comment-avatar" (click)="viewProfile(comment.authorUsername)">
+                    {{ getUserInitial(comment.authorUsername) }}
+                  </div>
+                }
+                <div class="comment-content-wrapper">
+                  @if (commentEdit()?.id === comment.id) {
+                    <!-- Edit Mode -->
+                    <div class="comment-edit-form">
+                      <textarea
+                        class="comment-edit-textarea"
+                        [value]="commentEdit()?.content"
+                        (input)="updateEditContent($any($event.target).value)"
+                        rows="3"
+                        [disabled]="updatingComment()">
+                      </textarea>
+                      <div class="comment-edit-actions">
+                        <button class="btn-cancel-edit" (click)="cancelEdit()" [disabled]="updatingComment()">
+                          Cancel
+                        </button>
+                        <button class="btn-save-edit" (click)="updateComment()" [disabled]="updatingComment()">
+                          @if (updatingComment()) {
+                            <span class="spinner-small"></span> Updating...
+                          } @else {
+                            Save
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- View Mode -->
+                    <div class="comment-header">
+                      <span class="comment-author" (click)="viewProfile(comment.authorUsername)">
+                        {{ comment.authorUsername }}
+                      </span>
+                      <span class="comment-date">{{ getTimeAgo(comment.createdAt) }}</span>
+                    </div>
+                    <div class="comment-text">{{ comment.content }}</div>
+                    <div class="comment-actions">
+                      <button class="comment-action-btn" (click)="startEdit(comment.id, comment.content)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                        Edit
+                      </button>
+                      <button class="comment-action-btn delete" (click)="deleteComment(comment.id)" [disabled]="deletingComment() === comment.id">
+                        @if (deletingComment() === comment.id) {
+                          <span class="spinner-small"></span>
+                        } @else {
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                          </svg>
+                          Delete
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Report Modal -->
+    @if (showReportModal()) {
+      <div class="modal-overlay" (click)="closeReportModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3 class="modal-title">Report Post</h3>
+            <button class="modal-close" (click)="closeReportModal()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <p class="modal-description">Help us understand the problem. What is going on with this post?</p>
+
+            <div class="report-categories">
+              @for (category of reportCategories; track category) {
+                <label class="category-option">
+                  <input
+                    type="radio"
+                    name="reportCategory"
+                    [value]="category"
+                    [ngModel]="reportCategory()"
+                    (ngModelChange)="reportCategory.set($event)" />
+                  <span class="category-label">{{ category }}</span>
+                  <span class="category-radio"></span>
+                </label>
+              }
+            </div>
+
+            <div class="report-message">
+              <label class="message-label">Additional details (optional)</label>
+              <textarea
+                class="message-textarea"
+                placeholder="Provide more context about why you're reporting this post..."
+                [ngModel]="reportMessage()"
+                (ngModelChange)="reportMessage.set($event)"
+                rows="4"
+                maxlength="500">
+              </textarea>
+              <div class="char-count">{{ reportMessage().length }}/500</div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeReportModal()" [disabled]="reporting()">
+              Cancel
+            </button>
+            <button class="btn-submit-report" (click)="submitReport()" [disabled]="reporting() || !reportCategory()">
+              @if (reporting()) {
+                <span class="spinner-small"></span> Submitting...
+              } @else {
+                Submit Report
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Edit Post Modal -->
+    @if (showEditPostModal()) {
+      <app-edit-post-modal
+        [post]="post()!"
+        (close)="closeEditPostModal()"
+        (postUpdated)="onPostUpdated()">
+      </app-edit-post-modal>
+    }
+  } @else {
+    <div class="loading-container">
+      <div class="spinner-large"></div>
+      <p>Loading post...</p>
+    </div>
+  }
+</div>

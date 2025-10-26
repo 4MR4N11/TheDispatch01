@@ -1,0 +1,240 @@
+/* Reports Page - Vintage Newspaper Design */
+
+.reports-page {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+  padding: 2rem 0;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 1.5rem,
+    rgba(0,0,0,.02) 1.5rem,
+    rgba(0,0,0,.02) calc(1.5rem + 1px)
+  );
+}
+
+.reports-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-text-primary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.tab {
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-border);
+  border-bottom: 3px solid var(--color-border);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: -2px;
+  margin-right: -2px;
+}
+
+.tab:last-child {
+  margin-right: 0;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  border-color: var(--color-text-secondary);
+}
+
+.tab.active {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-primary);
+  border-bottom-color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  z-index: 1;
+  position: relative;
+}
+
+/* Reports list */
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.report-card {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  transition: box-shadow 0.2s ease;
+}
+
+.report-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.report-type {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
+}
+
+.report-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-approved {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.report-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.report-info {
+  display: flex;
+  gap: var(--spacing-sm);
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.report-info strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.report-response {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary);
+}
+
+.report-response strong {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.report-response p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.post-link {
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.post-link:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+.no-reports {
+  text-align: center;
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-2xl);
+  font-size: 1rem;
+}
+
+.loading-container {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .reports-container {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .report-info {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .report-info strong {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-container {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .report-card {
+    padding: var(--spacing-md);
+  }
+
+  .report-header {
+    font-size: 0.875rem;
+  }
+
+  .report-info {
+    font-size: 0.8125rem;
+  }
+
+  .report-reason {
+    font-size: 0.8125rem;
+  }
+}
