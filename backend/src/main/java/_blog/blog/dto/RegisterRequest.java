@@ -2,6 +2,7 @@ package _blog.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import _blog.blog.validation.NoHtml;
 import _blog.blog.validation.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -29,11 +30,13 @@ public class RegisterRequest {
     @StrongPassword  // Custom validator enforcing complexity rules
     private String password;
 
+    @NoHtml(message = "First name cannot contain HTML")
     @NotBlank(message = "First name is required")
     @Size(min = 1, max = 30, message = "First name must be between 1 and 30 characters")
     @JsonProperty("firstname")
     private String firstName;
 
+    @NoHtml(message = "Last name cannot contain HTML")
     @NotBlank(message = "Last name is required")
     @Size(min = 1, max = 30, message = "Last name must be between 1 and 30 characters")
     @JsonProperty("lastname")

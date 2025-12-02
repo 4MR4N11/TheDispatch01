@@ -2,7 +2,7 @@
 import edjsHTML from 'editorjs-html';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ import { ErrorHandler } from '../../core/utils/error-handler';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatIconModule, NewPostModalComponent, EditPostModalComponent],
+  imports: [FormsModule, ReactiveFormsModule, MatIconModule, NewPostModalComponent, EditPostModalComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,5 +1,7 @@
 package _blog.blog.dto;
 
+import _blog.blog.validation.NoHtml;
+import _blog.blog.validation.SanitizedEditorJs;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -13,9 +15,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostRequest {
+    @NoHtml(message = "Title cannot contain HTML")
     @Size(max = 200, message = "Title must not exceed 200 characters")
     String title;
 
+    @SanitizedEditorJs(message = "Content contains unsafe HTML")
     @NotBlank(message = "Content is required")
     @Size(min = 1, max = 100000, message = "Content must be between 1 and 100000 characters")
     String content;

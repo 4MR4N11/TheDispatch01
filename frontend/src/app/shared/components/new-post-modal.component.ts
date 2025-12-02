@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild, EventEmitter, inject, Output, signal, AfterViewInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-new-post-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './new-post-modal.component.html',
   styleUrl: './new-post-modal.component.css',
 })

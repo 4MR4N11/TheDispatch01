@@ -2,6 +2,7 @@ package _blog.blog.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import _blog.blog.validation.NoHtml;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,9 +21,11 @@ public class UpdateProfileRequest {
     @Email(message = "Invalid email format")
     private String email;
 
+    @NoHtml(message = "First name cannot contain HTML")
     @JsonProperty("firstname")
     private String firstName;
 
+    @NoHtml(message = "Last name cannot contain HTML")
     @JsonProperty("lastname")
     private String lastName;
 

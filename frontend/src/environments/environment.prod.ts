@@ -1,6 +1,5 @@
 export const environment = {
   production: true,
-  // TODO: Replace with your actual production API URL
-  // Example: apiUrl: 'https://api.yourdomain.com'
-  apiUrl: 'https://api.yourdomain.com'
+  // Backend API runs on port 8080 (exposed from Docker container)
+  apiUrl: 'http://localhost:8080'
 };

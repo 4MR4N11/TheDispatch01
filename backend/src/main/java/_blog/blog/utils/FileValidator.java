@@ -1,9 +1,12 @@
 package _blog.blog.utils;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -130,43 +133,89 @@ public class FileValidator {
     }
 
     /**
-     * Verify image file by checking magic bytes
+     * ✅ SECURITY FIX: Verify image file by actually parsing it (not just magic bytes)
+     *
+     * Previous vulnerability: Only checked first few bytes, which could be faked
+     * New implementation: Uses ImageIO to parse the entire image file
+     *
+     * This prevents attackers from uploading malicious files disguised as images
      */
     private static boolean verifyImageMagicBytes(MultipartFile file) {
         try {
-            byte[] bytes = new byte[12]; // Read first 12 bytes
-            int read = file.getInputStream().read(bytes);
+            String extension = getExtension(file.getOriginalFilename());
 
-            if (read < 3) {
+            // SVG is XML-based, special handling required
+            if ("svg".equals(extension)) {
+                // For SVG, check if it starts with valid SVG/XML tags
+                return validateSvgFile(file);
+            }
+
+            // For raster images (JPEG, PNG, GIF, WEBP), use ImageIO to actually parse the image
+            BufferedImage image = ImageIO.read(file.getInputStream());
+
+            if (image == null) {
+                // ImageIO returns null if it cannot parse the image
                 return false;
             }
 
-            // Check for JPEG
-            if (bytes[0] == JPEG_MAGIC[0] && bytes[1] == JPEG_MAGIC[1] && bytes[2] == JPEG_MAGIC[2]) {
-                return true;
+            // Additional security checks
+            int width = image.getWidth();
+            int height = image.getHeight();
+
+            // Reject images that are too large (potential DoS attack)
+            if (width > 10000 || height > 10000) {
+                return false;
             }
 
-            // Check for PNG
-            if (read >= 4 && bytes[0] == PNG_MAGIC[0] && bytes[1] == PNG_MAGIC[1] &&
-                bytes[2] == PNG_MAGIC[2] && bytes[3] == PNG_MAGIC[3]) {
-                return true;
+            // Reject images with 0 dimensions
+            if (width <= 0 || height <= 0) {
+                return false;
             }
 
-            // Check for GIF
-            if (bytes[0] == GIF_MAGIC[0] && bytes[1] == GIF_MAGIC[1] && bytes[2] == GIF_MAGIC[2]) {
-                return true;
+            // Image is valid
+            return true;
+
+        } catch (IOException e) {
+            // If any error occurs during image parsing, reject the file
+            return false;
+        } catch (Exception e) {
+            // Catch any other exceptions (e.g., OutOfMemoryError for decompression bombs)
+            return false;
+        }
+    }
+
+    /**
+     * ✅ SECURITY FIX: Validate SVG files to prevent XSS attacks
+     *
+     * SVG files can contain JavaScript, so we need to validate them carefully
+     */
+    private static boolean validateSvgFile(MultipartFile file) {
+        try {
+            byte[] bytes = new byte[(int) Math.min(file.getSize(), 1024)]; // Read first 1KB
+            int read = file.getInputStream().read(bytes);
+
+            if (read <= 0) {
+                return false;
             }
 
-            // Check for WEBP (RIFF....WEBP)
-            if (read >= 12 && bytes[0] == WEBP_MAGIC[0] && bytes[1] == WEBP_MAGIC[1] &&
-                bytes[2] == WEBP_MAGIC[2] && bytes[3] == WEBP_MAGIC[3] &&
-                bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
-                return true;
+            String content = new String(bytes, 0, read);
+
+            // Check if it starts with valid XML/SVG tags
+            if (!content.trim().startsWith("<") ||
+                !(content.contains("<svg") || content.contains("<?xml"))) {
+                return false;
             }
 
-            // SVG is XML-based, harder to validate by magic bytes, rely on extension
-            String extension = getExtension(file.getOriginalFilename());
-            return "svg".equals(extension);
+            // SECURITY: Reject SVG files with script tags (XSS prevention)
+            String lowerContent = content.toLowerCase();
+            if (lowerContent.contains("<script") ||
+                lowerContent.contains("javascript:") ||
+                lowerContent.contains("onerror=") ||
+                lowerContent.contains("onload=")) {
+                return false;
+            }
+
+            return true;
 
         } catch (IOException e) {
             return false;

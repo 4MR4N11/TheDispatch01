@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import EditorJS from '@editorjs/editorjs';
@@ -13,7 +13,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-edit-post',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './edit-post.component.html',
   styleUrl: './edit-post.component.css',
 })

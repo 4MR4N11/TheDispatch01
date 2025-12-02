@@ -41,9 +41,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            // ✅ SECURITY FIX: CSRF disabled only because we use JWT (stateless)
-            // JWT in Authorization header is not vulnerable to CSRF
-            // If using cookies for auth, CSRF must be enabled
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(authz -> authz

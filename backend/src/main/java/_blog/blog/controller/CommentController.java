@@ -98,7 +98,7 @@ public class CommentController {
     @PutMapping("/{commentId}")
     public ResponseEntity<String> updateComment(
             @PathVariable Long commentId,
-            @RequestBody CommentRequest request,
+            @Valid @RequestBody CommentRequest request,
             Authentication auth
     ) {
         User user = userService.getUserByUsername(auth.getName());

@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationResponse } from '../../shared/models/models';
@@ -7,7 +7,7 @@ import { NotificationResponse } from '../../shared/models/models';
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.css'
 })

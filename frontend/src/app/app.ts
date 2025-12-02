@@ -1,7 +1,7 @@
 // app.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from './core/auth/auth.service';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
@@ -11,7 +11,7 @@ import { ConfirmationModalComponent } from './shared/components/confirmation-mod
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, NavbarComponent, NotificationsComponent, ConfirmationModalComponent],
+  imports: [RouterOutlet, NavbarComponent, NotificationsComponent, ConfirmationModalComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

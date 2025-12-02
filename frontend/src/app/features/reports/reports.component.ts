@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -8,7 +8,7 @@ import { ReportResponse } from '../../shared/models/models';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css'
 })
