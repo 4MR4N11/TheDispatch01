@@ -1,7 +1,5 @@
 package _blog.blog.dto;
 
-import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,11 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentResponse {
+public class SearchResponse {
     private Long id;
-    private String authorUsername;
-    private String authorAvatar;
-    private String content;
-    private Date createdAt;
-    private Date updatedAt;
+    private String username;
+    private String avatar;
 }

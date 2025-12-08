@@ -47,6 +47,41 @@
       </div>
 
       <!-- Right Actions -->
+       <div class="user-search-container" (click)="$event.stopPropagation()">
+
+          <input 
+            type="text"
+            class="user-search-input"
+            placeholder="Search users…"
+            [value]="userQuery()"
+            (input)="onUserSearch($event)"
+            (focus)="userSearchOpen.set(userResults().length > 0)"
+          />
+
+          @if (userSearchOpen() && userResults().length > 0) {
+            <div class="user-search-dropdown">
+              @for (u of userResults(); track u.id) {
+                <div class="user-search-item" (click)="selectUser(u)">
+                  @if (getAvatarUrl() && !isAvatarFailed(getAvatarUrl())) {
+                    <img
+                      [src]="getAvatarUrl()"
+                      alt="Avatar"
+                      class="user-avatar-img"
+                      (error)="onAvatarError(getAvatarUrl())">
+                  } @else {
+                    <div class="user-avatar">
+                      {{ getUserInitial() }}
+                    </div>
+                  }
+                  <span>{{ u.username }}</span>
+                </div>
+              }
+
+            </div>
+          }
+
+        </div>
+
       <div class="navbar-actions">
         <button class="action-button theme-toggle" (click)="toggleTheme()" [attr.aria-label]="themeService.isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
           @if (themeService.isDarkMode()) {

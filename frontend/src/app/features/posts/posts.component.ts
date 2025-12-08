@@ -59,11 +59,15 @@ export class PostDetailComponent {
   constructor() {
     const postId = Number(this.route.snapshot.paramMap.get('id'));
     this.apiService.getPostById(postId).subscribe(p => {
+      if (p.comments?.length) {
+        p.comments = this.sortComments(p.comments);
+      }
       this.post.set(p);
       this.parsePostContent(); // parse blocks dynamically
     });
     this.apiService.checkIfPostLiked(postId).subscribe(liked => this.isLiked.set(liked));
   }
+  
 
   private parsePostContent() {
     const post = this.post();
@@ -75,7 +79,6 @@ export class PostDetailComponent {
     try {
       const contentJSON =
         typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
-
       this.blocks.set(contentJSON.blocks || []);
     } catch (err) {
       console.error('Error parsing post content', err);
@@ -228,9 +231,16 @@ export class PostDetailComponent {
   private refreshPost() {
     const post = this.post();
     if (post?.id) {
-      this.apiService.getPostById(post.id).subscribe(p => this.post.set(p));
+      this.apiService.getPostById(post.id).subscribe(p => {
+        if (p.comments) {
+          p.comments = this.sortComments(p.comments);
+        }
+        this.post.set(p);
+      });
     }
   }
+
+
 
   openReportModal() {
     this.showReportModal.set(true);
@@ -356,4 +366,20 @@ export class PostDetailComponent {
     if (!avatarUrl) return false;
     return this.failedAvatars().has(avatarUrl);
   }
+
+  isCommentOwner(username: string): boolean {
+    return this.currentUser()?.username === username;
+  }
+
+  isCommentUpdated(comment: any): boolean {
+    return new Date(comment.updatedAt).getTime() > new Date(comment.createdAt).getTime();
+  }
+
+  private sortComments(comments: any[]) {
+    console.log('Sorting comments:', comments);
+    return [...comments].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
 }

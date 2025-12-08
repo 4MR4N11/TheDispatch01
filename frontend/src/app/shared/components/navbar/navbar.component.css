@@ -138,6 +138,7 @@
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
+  margin-top: 8px;
   gap: 0.5rem;
 }
 
@@ -147,6 +148,9 @@
   color: var(--color-text-primary);
 }
 
+.theme-toggle {
+  margin-bottom: 8px;
+}
 .theme-toggle svg {
   transition: transform 0.3s ease;
 }
@@ -191,6 +195,7 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  /* margin-top: 8px; */
 }
 
 .notification-button:hover {
@@ -229,7 +234,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  margin-top: 8px;
+  /* margin-top: 8px; */
 }
 
 .user-avatar {
@@ -351,8 +356,8 @@
 
 /* Notification Dropdown */
 .notification-dropdown {
-  position: fixed;
-  top: 70px;
+  position: absolute;
+  top: calc(100% + 0.75rem);
   right: 0;
   background: var(--color-bg-primary);
   border: 2px solid var(--color-text-primary);
@@ -728,6 +733,70 @@
   margin: 0.5rem 1.25rem;
 }
 
+
+
+
+/* Search container */
+.user-search-container {
+  position: relative;
+  width: 410px;
+  height: auto;
+}
+
+/* Input */
+.user-search-input {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  outline: none;
+  font-size: 14px;
+}
+
+.user-search-input:focus {
+  border-color: var(--color-primary);
+}
+
+/* Dropdown */
+.user-search-dropdown {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  width: 100%;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 10000;
+}
+
+/* Each result */
+.user-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.user-search-item:hover {
+  background: var(--color-bg-secondary);
+}
+
+/* Avatar inside dropdown */
+.user-search-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
   .navbar-container {
@@ -846,3 +915,7 @@
     min-width: 44px;
   }
 }
+
+
+
+

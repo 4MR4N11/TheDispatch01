@@ -1,6 +1,7 @@
 package _blog.blog.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import _blog.blog.dto.CommentResponse;
 import jakarta.validation.Valid;
@@ -204,15 +208,47 @@ public class PostController {
         return ResponseEntity.ok(respPosts);
     }
 
-    @GetMapping("/feed")
-    public ResponseEntity<List<PostResponse>> getFeed(Authentication auth) {
-        User user = userService.getUserByUsername(auth.getName());
-        List<Post> posts = postService.getFeedPosts(user.getId());
-        List<PostResponse> respPosts = new ArrayList<>();
+    // @GetMapping("/feed")
+    // public ResponseEntity<List<PostResponse>> getFeed(Authentication auth) {
+    //     User user = userService.getUserByUsername(auth.getName());
+    //     List<Post> posts = postService.getFeedPosts(user.getId());
+    //     List<PostResponse> respPosts = new ArrayList<>();
         
-        for (Post p : posts) {
+    //     for (Post p : posts) {
+    //         List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
+    //         respPosts.add(new PostResponse(
+    //             p.getId(),
+    //             p.getAuthor().getUsername(),
+    //             p.getAuthor().getAvatar(),
+    //             p.getTitle(),
+    //             p.getContent(),
+    //             p.getMediaType(),
+    //             p.getMediaUrl(),
+    //             p.isHidden(),
+    //             comments,
+    //             p.getCreatedAt(),
+    //             p.getUpdatedAt(),
+    //             p.getLikedBy().size(),
+    //             p.getLikedBy().stream()
+    //                 .map(User::getUsername)
+    //                 .toList()
+    //         ));
+    //     }
+    //     return ResponseEntity.ok(respPosts);
+    // }
+
+    @GetMapping("/feed")
+    public ResponseEntity<Map<String, Object>> getFeed(
+            Authentication auth,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        User user = userService.getUserByUsername(auth.getName());
+        Page<Post> postsPage = postService.getFeedPosts(user.getId(), page, size);
+
+        List<PostResponse> respPosts = postsPage.getContent().stream().map(p -> {
             List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-            respPosts.add(new PostResponse(
+            return new PostResponse(
                 p.getId(),
                 p.getAuthor().getUsername(),
                 p.getAuthor().getAvatar(),
@@ -225,13 +261,20 @@ public class PostController {
                 p.getCreatedAt(),
                 p.getUpdatedAt(),
                 p.getLikedBy().size(),
-                p.getLikedBy().stream()
-                    .map(User::getUsername)
-                    .toList()
-            ));
-        }
-        return ResponseEntity.ok(respPosts);
+                p.getLikedBy().stream().map(User::getUsername).toList()
+            );
+        }).toList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("posts", respPosts);
+        response.put("currentPage", postsPage.getNumber());
+        response.put("totalItems", postsPage.getTotalElements());
+        response.put("totalPages", postsPage.getTotalPages());
+        response.put("isLast", postsPage.isLast());
+
+        return ResponseEntity.ok(response);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deletePost(@PathVariable Long id, Authentication auth) {

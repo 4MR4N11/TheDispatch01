@@ -20,4 +20,5 @@ public interface  UserService {
     boolean deleteUser(Long userId);
     boolean banUser(Long userId);
     boolean unbanUser(Long userId);
+    List<User> searchUsers(String keyword);
 }

@@ -7,6 +7,8 @@ import _blog.blog.dto.PostResponse;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
 
+import org.springframework.data.domain.Page;
+
 public interface PostService {
     Post createPost(PostRequest request, User author);
     Post updatePost(Long postId, PostRequest request);
@@ -18,7 +20,7 @@ public interface PostService {
     List<Post> getVisiblePostsByIdWithCommentsAndLikes(Long authorId);
     List<Post> getAllPostsWithCommentsAndLikes();
     List<Post> getAllPostsIncludingHidden();
-    List<Post> getFeedPosts(Long userId);
+    Page<Post> getFeedPosts(Long userId, int page, int size);
     List<PostResponse> getPostsRespByUserId(Long userId);
     boolean deletePost(Long postId);
     boolean hidePost(Long postId);

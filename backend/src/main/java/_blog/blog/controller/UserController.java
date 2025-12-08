@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import _blog.blog.dto.SearchResponse;
 import _blog.blog.dto.UpdateProfileRequest;
 import _blog.blog.dto.UserResponse;
 import _blog.blog.entity.User;
@@ -180,5 +182,22 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+    @GetMapping("/search")
+    public List<SearchResponse> searchUsers(@RequestParam("q") String keyword, Authentication auth) {
+        List<User> users = userService.searchUsers(keyword);
+        List<SearchResponse> searchResponses = new ArrayList<>();
+        String currentUsername = auth.getName();
+        for (User u : users) {
+            if (u.getUsername().equals(currentUsername)) {
+                continue; // Skip the current user
+            }
+            searchResponses.add(new SearchResponse(
+                u.getId(),
+                u.getUsername(),
+                u.getAvatar()
+            ));
+        }
+        return searchResponses;
     }
 }

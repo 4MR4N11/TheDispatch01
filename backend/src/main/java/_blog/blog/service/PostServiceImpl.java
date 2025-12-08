@@ -13,6 +13,9 @@ import _blog.blog.entity.User;
 import _blog.blog.mapper.PostMapper;
 import _blog.blog.repository.NotificationRepository;
 import _blog.blog.repository.PostRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -94,20 +97,16 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<Post> getFeedPosts(Long userId) {
+    public Page<Post> getFeedPosts(Long userId, int page, int size) {
         List<User> subscriptions = subscriptionService.getSubscriptions(userId);
 
-        // Include the user's own ID along with followed users
         List<Long> authorIds = new ArrayList<>();
-        authorIds.add(userId); // Add user's own posts
+        authorIds.add(userId);
+        authorIds.addAll(subscriptions.stream().map(User::getId).toList());
 
-        // Add followed users' posts
-        authorIds.addAll(subscriptions.stream()
-                .map(User::getId)
-                .toList());
-
-        return postRepository.findPostsByAuthorIdsWithCommentsAndLikes(authorIds);
+        return postRepository.findPostsByAuthorIds(authorIds, PageRequest.of(page, size));
     }
+
 
     @Override
     public List<PostResponse> getPostsRespByUserId(Long userId) {

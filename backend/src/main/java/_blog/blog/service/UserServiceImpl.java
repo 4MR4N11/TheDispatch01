@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import _blog.blog.exception.UserAlreadyExistsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +63,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(RegisterRequest request) {
+        // Check if username or email already exists
+        
+        if (userRepository.findByUsername(request.getUsername()).isPresent()
+            || userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("Username or email already in use");
+        }
         User user = UserMapper.toEntity(request, passwordEncoder);
         if (user.getAvatar() == null) {
             user.setAvatar("");
@@ -71,7 +80,7 @@ public class UserServiceImpl implements UserService {
     public User authenticate(LoginRequest request) {
         // Find user by email or username
         User user = findUserByEmailOrUsername(request.getUsernameOrEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Check if user is banned
         if (user.isBanned()) {
@@ -120,12 +129,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(Long id) {
-        return userRepository.findById(id).orElseThrow(()  -> new RuntimeException("User not found"));
+        return userRepository.findById(id).orElseThrow(()  -> new UsernameNotFoundException("User not found"));
     }
 
     @Override
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
     @Override
     public User updateUser(User user, Long userId) {
@@ -136,7 +145,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public boolean deleteUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // 1. Delete all reports (where user is reporter or reported user)
         reportRepository.deleteByUser(user);
@@ -171,7 +180,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean banUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setBanned(true);
         userRepository.save(user);
         return true;
@@ -180,7 +189,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean unbanUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setBanned(false);
         userRepository.save(user);
         return true;
@@ -206,7 +215,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Validate current password if changing password
         if (request.getNewPassword() != null && !request.getNewPassword().isEmpty()) {
@@ -264,5 +273,10 @@ public class UserServiceImpl implements UserService {
                 .toList(),
             postService.getPostsRespByUserId(updatedUser.getId())
         );
+    }
+
+    @Override
+    public List<User> searchUsers(String keyword) {
+        return userRepository.searchUsers(keyword);
     }
 }

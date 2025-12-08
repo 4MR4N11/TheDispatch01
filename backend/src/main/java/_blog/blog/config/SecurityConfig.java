@@ -21,6 +21,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 import _blog.blog.filter.JwtAuthenticationFilter;
 
@@ -62,7 +64,7 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frame -> frame.deny())  // Prevent clickjacking
                 .xssProtection(xss -> xss.disable())  // Modern browsers use CSP instead
-                .contentTypeOptions(contentType -> contentType.disable())  // Prevent MIME sniffing
+                .contentTypeOptions(withDefaults())  // Prevent MIME sniffing
                 .httpStrictTransportSecurity(hsts -> hsts
                     .includeSubDomains(true)
                     .maxAgeInSeconds(31536000)  // 1 year

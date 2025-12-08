@@ -137,6 +137,22 @@
             </div>
           </article>
         }
+        @if (isLoadingMore()) {
+          <div class="loading-more-container">
+            <div class="spinner-small"></div>
+            <p>Loading more posts...</p>
+          </div>
+        }
+         @if (currentPage() < totalPages() && !loading()) {
+            <div id="scroll-sentinel" class="scroll-sentinel">
+              <div class="sentinel-content">
+              </div>
+            </div>
+          } @else if (currentPage() >= totalPages() && posts().length > 0) {
+            <div class="end-of-feed">
+              <p>No more posts to load</p>
+            </div>
+          }
       </div>
     }
   </div>

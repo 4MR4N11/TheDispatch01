@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import _blog.blog.entity.Post;
 
@@ -40,5 +42,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // Admin queries - include hidden posts
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.comments LEFT JOIN FETCH p.likedBy ORDER BY p.createdAt DESC")
     List<Post> findAllWithCommentsAndLikesIncludingHidden();
+
+
+    @Query("""
+        SELECT p FROM Post p
+        WHERE p.hidden = false AND p.author.id IN :authorIds
+        ORDER BY p.createdAt DESC
+    """)
+    Page<Post> findPostsByAuthorIds(@Param("authorIds") List<Long> authorIds, Pageable pageable);
 }
 

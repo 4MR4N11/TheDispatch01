@@ -80,7 +80,8 @@ public class CommentServiceImpl implements CommentService {
                 comment.getAuthor().getUsername(),
                 comment.getAuthor().getAvatar(),
                 comment.getContent(),
-                comment.getCreatedAt()
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
             ));
         }
 

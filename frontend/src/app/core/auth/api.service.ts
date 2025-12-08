@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PostResponse, PostRequest, CommentResponse, CommentRequest, LikeResponse, UserResponse, ReportRequest, ReportResponse, AdminReportActionRequest, NotificationResponse } from '../../shared/models/models';
+import { PostResponse, PostRequest, CommentResponse, CommentRequest, LikeResponse, UserResponse, ReportRequest, ReportResponse, AdminReportActionRequest, NotificationResponse, SearchResponse } from '../../shared/models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -21,9 +21,13 @@ export class ApiService {
     return this.http.get<PostResponse[]>(`${this.baseUrl}/posts/admin/all`);
   }
 
-  getFeed(): Observable<PostResponse[]> {
-    return this.http.get<PostResponse[]>(`${this.baseUrl}/posts/feed`);
+  getFeed(page: number, size: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/posts/feed`, {
+      params: { page, size }
+    });
   }
+
+
 
   getMyPosts(): Observable<PostResponse[]> {
     return this.http.get<PostResponse[]>(`${this.baseUrl}/posts/my-posts`);
@@ -215,5 +219,9 @@ export class ApiService {
 
   markAllNotificationsAsRead(): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/notifications/mark-all-read`, {});
+  }
+
+  searchUsers(keyword: string): Observable<SearchResponse[]> {
+    return this.http.get<SearchResponse[]>(`${this.baseUrl}/users/search?q=${keyword}`);
   }
 }

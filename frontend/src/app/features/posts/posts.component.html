@@ -237,9 +237,13 @@
                       <span class="comment-author" (click)="viewProfile(comment.authorUsername)">
                         {{ comment.authorUsername }}
                       </span>
-                      <span class="comment-date">{{ getTimeAgo(comment.createdAt) }}</span>
+                      <span class="comment-date">{{ getTimeAgo(comment.createdAt) }}</span> 
+                      @if(isCommentUpdated(comment)) {
+                        <span class="comment-updated-indicator">(edited)</span>
+                      }
                     </div>
                     <div class="comment-text">{{ comment.content }}</div>
+                    @if (isCommentOwner(comment.authorUsername)) {
                     <div class="comment-actions">
                       <button class="comment-action-btn" (click)="startEdit(comment.id, comment.content)">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -258,6 +262,7 @@
                         }
                       </button>
                     </div>
+                  }
                   }
                 </div>
               </div>

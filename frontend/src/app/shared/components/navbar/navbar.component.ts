@@ -30,6 +30,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   protected readonly failedAvatars = signal<Set<string>>(new Set());
   protected readonly mobileMenuOpen = signal(false);
   private pollSubscription?: Subscription;
+  protected readonly userQuery = signal('');
+  protected readonly userResults = signal<any[]>([]);
+  protected readonly userSearchOpen = signal(false);
+  private searchTimeout: any;
 
   toggleMobileMenu() {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
@@ -73,6 +77,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
     if (!target.closest('.notification-menu')) {
       this.closeNotifDropdown();
+    }
+    if (!target.closest('.user-search-container')) {
+      this.closeUserSearch();
     }
   }
 
@@ -229,5 +236,43 @@ export class NavbarComponent implements OnInit, OnDestroy {
         // Silently fail - not critical
       }
     });
+  }
+
+  onUserSearch(event: any) {
+    const q = event.target.value.trim();
+    this.userQuery.set(q);
+
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+
+    // debounce
+    this.searchTimeout = setTimeout(() => {
+      if (q.length < 2) {
+        this.userResults.set([]);
+        this.userSearchOpen.set(false);
+        return;
+      }
+
+      this.apiService.searchUsers(q).subscribe({
+        next: (users) => {
+          this.userResults.set(users);
+          this.userSearchOpen.set(users.length > 0);
+        },
+        error: () => {
+          this.userResults.set([]);
+          this.userSearchOpen.set(false);
+        }
+      });
+    }, 250);  
+  }
+
+  selectUser(user: any) {
+    this.userSearchOpen.set(false);
+    this.userQuery.set('');
+    this.router.navigate(['/profile', user.username]);
+  }
+
+  // Close on outside click
+  closeUserSearch() {
+    this.userSearchOpen.set(false);
   }
 }

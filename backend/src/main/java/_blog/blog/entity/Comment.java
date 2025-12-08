@@ -3,6 +3,7 @@ package _blog.blog.entity;
 import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,6 +46,10 @@ public class Comment {
     @CreationTimestamp
     @Column(updatable=false, name = "created_at")
     private Date createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     public String getAuthorUsername() {
         return author.getUsername();

@@ -34,6 +34,7 @@ export interface CommentResponse {
   authorAvatar: string;
   content: string;
   createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface LikeResponse {
@@ -125,4 +126,14 @@ export interface NotificationResponse {
   commentId?: number;
   read: boolean;
   createdAt: string | Date;
+}
+
+export interface SearchResponse {
+  id: number;
+  username: string;
+  avatar: string;
+}
+
+export interface SearchRequest {
+  keyword: string;
 }

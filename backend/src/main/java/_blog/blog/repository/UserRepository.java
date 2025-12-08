@@ -1,6 +1,7 @@
 package _blog.blog.repository;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
         WHERE u.username = :username
     """)
     Optional<User> findByUsernameWithSubscriptionsAndPosts(@Param("username") String username);
+    @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<User> searchUsers(@Param("keyword") String keyword);
 }
