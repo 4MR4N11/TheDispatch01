@@ -14,6 +14,7 @@ import _blog.blog.entity.Notification;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
 import _blog.blog.enums.NotificationType;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.repository.NotificationRepository;
 import _blog.blog.repository.UserRepository;
 
@@ -52,7 +53,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public Page<NotificationDto> getUserNotifications(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         Page<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user, pageable);
         return notifications.map(this::toDto);
@@ -61,7 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationDto> getAllUserNotifications(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         return notifications.stream().map(this::toDto).collect(Collectors.toList());
@@ -70,7 +71,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public Long getUnreadCount(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         return notificationRepository.countUnreadByUser(user);
     }
@@ -79,7 +80,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void markAsRead(Long notificationId, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         notificationRepository.markAsReadById(notificationId, user);
     }
@@ -88,7 +89,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void markAllAsRead(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         notificationRepository.markAllAsReadByUser(user);
     }

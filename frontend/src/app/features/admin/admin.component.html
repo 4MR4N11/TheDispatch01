@@ -197,6 +197,13 @@
                           <button class="btn-ban" (click)="banUser(user.id)">Ban</button>
                         }
                         <button class="btn-delete" (click)="deleteUser(user.id)">Delete</button>
+                        <button class="btn-promote" (click)="promoteToAdmin(user.id)" [disabled]="promoting()">
+                          @if (promoting()) {
+                            Promoting...
+                          } @else {
+                            Promote to Admin
+                          }
+                        </button>
                       }
                     </div>
                   </td>

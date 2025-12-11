@@ -73,4 +73,8 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     @Modifying
     @Query("DELETE FROM Report r WHERE r.reporter = :user OR r.reportedUser = :user")
     void deleteByUser(@Param("user") User user);
+
+    @Modifying
+    @Query("UPDATE Report r SET r.reportedPost = NULL WHERE r.reportedPost.id = :postId")
+    void clearPostReference(@Param("postId") Long postId);
 }

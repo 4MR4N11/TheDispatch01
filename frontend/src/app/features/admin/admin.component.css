@@ -480,7 +480,8 @@
 
 .btn-ban,
 .btn-unban,
-.btn-delete {
+.btn-delete,
+.btn-promote {
   padding: 0.5rem 1rem;
   border: 2px solid;
   border-radius: 0;
@@ -525,6 +526,18 @@
 
 .btn-delete:hover {
   background: #8B2C2C;
+  color: var(--color-bg-primary);
+  transform: translateY(-1px);
+}
+
+.btn-promote {
+  background: var(--color-bg-primary);
+  color: #2E5D2E;
+  border-color: #2E5D2E;
+}
+
+.btn-promote:hover {
+  background: #2E5D2E;
   color: var(--color-bg-primary);
   transform: translateY(-1px);
 }

@@ -14,6 +14,7 @@ import { EditProfileComponent } from './features/edit-profile/edit-profile.compo
 import { NotificationsComponent } from './features/notifications/notifications.component';
 import { AuthGuard } from './core/guard/auth-guard';
 import { AdminGuard } from './core/auth/admin.guard';
+import { NotFoundComponent } from './features/not-found/not-found.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -30,5 +31,5 @@ export const routes: Routes = [
   { path: 'my-reports', component: ReportsComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [AuthGuard, AdminGuard] },
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: '**', redirectTo: '/home' }
+  { path: '**', component: NotFoundComponent }
 ];

@@ -70,7 +70,7 @@ public class SecurityConfig {
                     .maxAgeInSeconds(31536000)  // 1 year
                 )
                 .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;")
+                    .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; video-src 'self' data:;")
                 )
             )
             .authenticationProvider(authenticationProvider())

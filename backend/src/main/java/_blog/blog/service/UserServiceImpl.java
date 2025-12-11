@@ -5,8 +5,14 @@ import java.util.Optional;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import _blog.blog.exception.BadRequestException;
+import _blog.blog.exception.BannedException;
+import _blog.blog.exception.DuplicateResourceException;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.exception.UserAlreadyExistsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.DisabledException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -83,18 +89,23 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Check if user is banned
-        if (user.isBanned()) {
-            throw new RuntimeException("Your account has been banned. Please contact support.");
-        }
-
+        
         // Authenticate using the user's email as the principal
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                user.getEmail(), // Use email as consistent identifier for Spring Security
-                request.getPassword()
-            )
-        );
-
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    user.getEmail(),
+                    request.getPassword()
+                )
+            );
+        } catch (DisabledException e) {
+            // User is disabled (banned in our case)
+            throw new BannedException("Your account has been banned. Please contact support.");
+        }
+            
+        if (user.isBanned()) {
+            throw new BannedException("Your account has been banned. Please contact support.");
+        }
         return user;
     }
 
@@ -102,7 +113,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(String username) {
         User user = userRepository.findByUsernameWithSubscriptionsAndPosts(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User", username));
 
         var subscriptions = user.getSubscriptions().stream()
             .map(sub -> sub.getSubscribedTo().getUsername())
@@ -220,10 +231,10 @@ public class UserServiceImpl implements UserService {
         // Validate current password if changing password
         if (request.getNewPassword() != null && !request.getNewPassword().isEmpty()) {
             if (request.getCurrentPassword() == null || request.getCurrentPassword().isEmpty()) {
-                throw new RuntimeException("Current password is required to change password");
+                throw new BadRequestException("Current password is required to change password");
             }
             if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-                throw new RuntimeException("Current password is incorrect");
+                throw new BadRequestException("Current password is incorrect");
             }
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         }
@@ -231,7 +242,7 @@ public class UserServiceImpl implements UserService {
         // Check if username is unique (if changed)
         if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
             if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-                throw new RuntimeException("Username is already taken");
+                throw new DuplicateResourceException("Username", request.getUsername());
             }
             user.setUsername(request.getUsername());
         }
@@ -239,7 +250,7 @@ public class UserServiceImpl implements UserService {
         // Check if email is unique (if changed)
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new RuntimeException("Email is already taken");
+                throw new DuplicateResourceException("Email", request.getEmail());
             }
             user.setEmail(request.getEmail());
         }
@@ -278,5 +289,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> searchUsers(String keyword) {
         return userRepository.searchUsers(keyword);
+    }
+
+    @Override
+    public boolean promoteToAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setRole(_blog.blog.enums.Role.ADMIN);
+        userRepository.save(user);
+        return true;
     }
 }

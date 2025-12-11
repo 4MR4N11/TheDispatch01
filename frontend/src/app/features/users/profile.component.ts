@@ -9,7 +9,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,7 +26,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, DatePipe, FormsModule, MatIconModule, MatButtonModule, RouterLink],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +53,7 @@ export class ProfileComponent implements OnInit {
   protected readonly reportMessage = signal('');
   protected readonly showReportModal = signal(false);
   protected readonly failedAvatars = signal<Set<string>>(new Set());
+  protected readonly promoting = signal(false);
 
   protected readonly reportCategories = [
     'Harassment or bullying',
@@ -241,8 +242,12 @@ export class ProfileComponent implements OnInit {
           this.error.set('User not found');
         }
       },
-      error: () => {
-        this.error.set('Failed to load user');
+      error: (err) => {
+        if (err.status === 404) {
+          this.error.set('User not found');
+        } else {
+          this.error.set('Failed to load user');
+        }
         this.loading.set(false);
       },
     });
@@ -388,5 +393,31 @@ export class ProfileComponent implements OnInit {
   isAvatarFailed(avatarUrl: string | null | undefined): boolean {
     if (!avatarUrl) return false;
     return this.failedAvatars().has(avatarUrl);
+  }
+
+  isUserAdmin(): boolean {
+    const user = this.user();
+    return user?.role === 'ADMIN';
+  }
+  promoteToAdmin() {
+    const userId = this.user()?.id;
+    if (userId && this.isAdmin()) {
+      this.promoting.set(true);
+      this.apiService.promoteToAdmin(userId).subscribe({
+        next: () => {
+          this.notificationService.success('User promoted to admin successfully');
+          this.promoting.set(false);
+          // Optionally refresh user data
+          const username = this.routeUsername();
+          if (username) {
+            this.loadOtherProfileData(username);
+          }
+        },
+        error: () => {
+          this.promoting.set(false);
+          this.notificationService.error('Failed to promote user to admin');
+        },
+      });
+    }
   }
 }

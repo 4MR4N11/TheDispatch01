@@ -224,4 +224,12 @@ export class ApiService {
   searchUsers(keyword: string): Observable<SearchResponse[]> {
     return this.http.get<SearchResponse[]>(`${this.baseUrl}/users/search?q=${keyword}`);
   }
+
+  promoteToAdmin(id: number): Observable<string> {
+    return this.http.post(`${this.baseUrl}/users/promote/${id}`, {}, { responseType: 'text' });
+  }
+
+  deleteMe() {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/users/me/delete`, {});
+  }
 }

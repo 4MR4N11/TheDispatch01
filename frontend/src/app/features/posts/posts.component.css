@@ -13,7 +13,7 @@
 }
 
 .post-detail-container {
-  max-width: 750px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -22,8 +22,8 @@
 .post-detail-card {
   background: var(--color-bg-primary);
   border-top: 4px double var(--color-text-primary);
-  padding: 2rem 0;
-  margin-bottom: 2rem;
+  padding: 2rem 0 0 0;
+  margin-bottom: 0;
 }
 
 /* Post Header */
@@ -145,6 +145,8 @@
   font-family: var(--font-serif);
   font-size: 1.125rem;
   line-height: 1.8;
+  border: 2px solid var(--color-border);
+  padding: 2rem;
   color: var(--color-text-primary);
   margin-bottom: 2rem;
   word-wrap: break-word;
@@ -306,7 +308,7 @@
   align-items: center;
   padding: 1.5rem 0;
   border-top: 1px solid var(--color-border);
-  margin: 2rem 0;
+  margin: 2rem 0 0 0;
 }
 
 .actions-left {
@@ -384,7 +386,7 @@
 
 /* Comments Section */
 .comments-section {
-  margin-top: 3rem;
+  margin-top: 0;
   border-top: 2px solid var(--color-text-primary);
   padding-top: 2rem;
 }
@@ -954,6 +956,62 @@
   font-size: 0.875rem;
   text-indent: 0;
   text-align: center;
+}
+
+/* Error State */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-icon {
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.error-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+.error-message {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 2rem 0;
+  max-width: 400px;
+}
+
+.back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-home-btn:hover {
+  background: var(--color-accent);
+  transform: translateY(-2px);
 }
 
 .spinner-large {

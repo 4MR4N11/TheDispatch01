@@ -85,6 +85,18 @@
   border-left: 4px solid var(--color-text-primary);
 }
 
+.danger-zone {
+  padding: 2rem;
+  background: var(--color-bg-primary);
+  border: 2px solid #8B2C2C;
+  border-left: 4px solid var(--color-text-primary);
+  color: #8B2C2C;
+}
+.danger-zone .section-title {
+  color: #8B2C2C;
+  border-bottom: 2px solid #8B2C2C;
+}
+
 .section-title {
   font-size: 1.5rem;
   font-weight: 900;
@@ -249,7 +261,8 @@
 }
 
 .btn-cancel,
-.btn-save {
+.btn-save,
+.btn-delete-account {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -290,6 +303,17 @@
 .btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-delete-account {
+  background: #8B2C2C;
+  color: var(--color-bg-primary);
+  border-color: #8B2C2C;
+}
+.btn-delete-account:hover {
+  background: var(--color-bg-primary);
+  color: #8B2C2C;
+  transform: translateY(-1px);
 }
 
 .spinner-small {

@@ -141,6 +141,16 @@ public class UserController {
         return userResponse;
     }
 
+    @PostMapping("/me/delete")
+    public ResponseEntity<Map<String, String>> deleteMe(Authentication auth) {
+        User user = userService.getUserByUsername(auth.getName());
+        if (userService.deleteUser(user.getId())) {
+            return ResponseEntity.ok(Map.of("message", "Your account has been deleted successfully!"));
+        } else {
+            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        }
+    }
+
     @PostMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
@@ -200,4 +210,14 @@ public class UserController {
         }
         return searchResponses;
     }
+    @PostMapping("/promote/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> promoteToAdmin(@PathVariable Long id) {
+        if (userService.promoteToAdmin(id)) {
+            return ResponseEntity.ok(Map.of("message", "User promoted to admin successfully!"));
+        } else {
+            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        }
+    }
+
 }

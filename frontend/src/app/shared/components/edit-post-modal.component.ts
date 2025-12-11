@@ -85,6 +85,16 @@ export class EditPostModalComponent implements OnInit, AfterViewInit, OnDestroy 
               }
             }
           }
+        },
+        video: {
+          class: this.createVideoTool(),
+          config: {
+            uploader: {
+              uploadByFile: (file: File) => {
+                return this.uploadEditorVideo(file);
+              }
+            }
+          }
         }
       },
       onChange: async () => {
@@ -95,6 +105,94 @@ export class EditPostModalComponent implements OnInit, AfterViewInit, OnDestroy 
         this.editorReady.set(true);
       }
     });
+  }
+
+  private createVideoTool() {
+    const self = this;
+
+    return class VideoTool {
+      private data: any;
+      private wrapper: HTMLElement | null = null;
+
+      static get toolbox() {
+        return {
+          title: 'Video',
+          icon: '<svg width="17" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>'
+        };
+      }
+
+      constructor({ data }: { data: any }) {
+        this.data = data || {};
+      }
+
+      render() {
+        this.wrapper = document.createElement('div');
+        this.wrapper.classList.add('video-tool');
+
+        if (this.data && this.data.file && this.data.file.url) {
+          this.showVideo(this.data.file.url);
+        } else {
+          this.showUploader();
+        }
+
+        return this.wrapper;
+      }
+
+      private showUploader() {
+        const uploadWrapper = document.createElement('div');
+        uploadWrapper.style.cssText = 'border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer; border-radius: 8px; background: #f9f9f9;';
+        uploadWrapper.innerHTML = `
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="#666" style="margin-bottom: 10px;">
+            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+          </svg>
+          <p style="margin: 0; color: #666; font-size: 14px;">Click to upload video</p>
+          <p style="margin: 5px 0 0; color: #999; font-size: 12px;">MP4, WebM, OGG (max 100MB)</p>
+        `;
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'video/mp4,video/webm,video/ogg';
+        fileInput.style.display = 'none';
+
+        fileInput.addEventListener('change', async (e: Event) => {
+          const target = e.target as HTMLInputElement;
+          if (target.files && target.files[0]) {
+            uploadWrapper.innerHTML = '<p style="color: #666;">Uploading video...</p>';
+            try {
+              const response = await self.uploadEditorVideo(target.files[0]);
+              if (response.success === 1 && response.file.url) {
+                this.data = { file: { url: response.file.url } };
+                this.showVideo(response.file.url);
+              }
+            } catch (error) {
+              uploadWrapper.innerHTML = '<p style="color: red;">Upload failed. Click to try again.</p>';
+            }
+          }
+        });
+
+        uploadWrapper.addEventListener('click', () => fileInput.click());
+        uploadWrapper.appendChild(fileInput);
+        this.wrapper?.appendChild(uploadWrapper);
+      }
+
+      private showVideo(url: string) {
+        if (!this.wrapper) return;
+        this.wrapper.innerHTML = '';
+        const video = document.createElement('video');
+        video.src = url;
+        video.controls = true;
+        video.style.cssText = 'max-width: 100%; border-radius: 8px;';
+        this.wrapper.appendChild(video);
+      }
+
+      save() {
+        return this.data;
+      }
+
+      validate(savedData: any) {
+        return savedData.file && savedData.file.url;
+      }
+    };
   }
 
   private uploadEditorImage(file: File): Promise<any> {

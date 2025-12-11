@@ -197,4 +197,37 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value()
             ));
     }
+
+    @ExceptionHandler(BannedException.class)
+    public ResponseEntity<Map<String, Object>> handleBannedException(BannedException ex) {
+        log.warn("Banned user attempt: {}", ex.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(createErrorResponse(
+                "Your account has been banned. Please contact support for more information.",
+                HttpStatus.FORBIDDEN.value()
+            ));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(createErrorResponse(
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+            ));
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateResource(DuplicateResourceException ex) {
+        log.warn("Duplicate resource: {}", ex.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(createErrorResponse(
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value()
+            ));
+    }
 }

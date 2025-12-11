@@ -208,4 +208,24 @@ export class EditProfileComponent implements OnInit {
   cancel() {
     this.router.navigate(['/profile', this.originalUsername]);
   }
+
+  deleteAccount() {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      this.loading.set(true);
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser) {
+        this.apiService.deleteMe().subscribe({
+          next: () => {
+            this.notificationService.success('Account deleted successfully');
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          },
+          error: (error) => {
+            this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete account'));
+            this.loading.set(false);
+          }
+        });
+      }
+    }
+  }
 }

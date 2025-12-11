@@ -62,6 +62,16 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
               }
             }
           }
+        },
+        video: {
+          class: this.createVideoTool(),
+          config: {
+            uploader: {
+              uploadByFile: (file: File) => {
+                return this.uploadEditorVideo(file);
+              }
+            }
+          }
         }
       },
       onChange: async () => {
@@ -72,6 +82,45 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
         this.editorReady.set(true);
       }
     });
+  }
+
+  // Create a simple video tool class
+  private createVideoTool() {
+    const self = this;
+    return class VideoTool {
+      static get toolbox() {
+        return {
+          title: 'Video',
+          icon: '<svg class="icon icon--play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'
+        };
+      }
+
+      static get isInline() {
+        return false;
+      }
+
+      constructor({ data, config }: any) {
+        this.data = data;
+        this.config = config;
+      }
+
+      data: any;
+      config: any;
+
+      render() {
+        const container = document.createElement('div');
+        if (this.data && this.data.file && this.data.file.url) {
+          container.innerHTML = `<video controls width="100%" style="max-width: 100%"><source src="${this.data.file.url}" type="video/mp4"></video>`;
+        } else {
+          container.innerHTML = '<p>Upload a video</p>';
+        }
+        return container;
+      }
+
+      save() {
+        return this.data;
+      }
+    };
   }
 
   private uploadEditorImage(file: File): Promise<any> {
@@ -112,10 +161,10 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
       }
 
       // Validate file size (max 100MB)
-      const maxSize = 100 * 1024 * 1024;
+      const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
-        reject('File size must be less than 100MB');
-        this.notificationService.error('File size must be less than 100MB');
+        reject('File size must be less than 50MB');
+        this.notificationService.error('File size must be less than 50MB');
         return;
       }
 

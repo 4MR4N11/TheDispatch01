@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import _blog.blog.dto.CommentResponse;
 import _blog.blog.entity.Comment;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.repository.CommentRepository;
 
 @Service
@@ -38,8 +39,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment updateComment(Comment comment, Long commentId) {
         Comment existingComment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
+
         existingComment.setContent(comment.getContent());
         return commentRepository.save(existingComment);
     }
@@ -47,14 +48,14 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
-            throw new RuntimeException("Comment not found");
+            throw new ResourceNotFoundException("Comment", commentId);
         }
         commentRepository.deleteById(commentId);
     }
 
     public Comment getCommentById(Long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
     }
 
     public List<Comment> getCommentsByPostId(Long postId) {

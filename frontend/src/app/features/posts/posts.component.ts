@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -17,7 +17,7 @@ import { EditPostModalComponent } from '../../shared/components/edit-post-modal.
 @Component({
   selector: 'app-post-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, MatIconModule, MatButtonModule, EditPostModalComponent],
+  imports: [CommonModule, FormsModule, DatePipe, MatIconModule, MatButtonModule, EditPostModalComponent, RouterLink],
   templateUrl: './posts.component.html',
   styleUrl: './posts.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,8 +44,11 @@ export class PostDetailComponent {
   protected readonly showEditPostModal = signal(false);
   protected readonly failedAvatars = signal<Set<string>>(new Set());
   private readonly sanitizer = inject(DomSanitizer);
+  protected readonly deletingPost = signal(false);
 
   protected readonly blocks = signal<any[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
   protected readonly reportCategories = [
     'Harassment or bullying',
     'Spam or misleading',
@@ -58,14 +61,31 @@ export class PostDetailComponent {
 
   constructor() {
     const postId = Number(this.route.snapshot.paramMap.get('id'));
-    this.apiService.getPostById(postId).subscribe(p => {
-      if (p.comments?.length) {
-        p.comments = this.sortComments(p.comments);
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.apiService.getPostById(postId).subscribe({
+      next: (p) => {
+        if (p.comments?.length) {
+          p.comments = this.sortComments(p.comments);
+        }
+        this.post.set(p);
+        this.parsePostContent();
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        if (err.status === 404) {
+          this.error.set('Post not found');
+        } else {
+          this.error.set('Failed to load post');
+        }
       }
-      this.post.set(p);
-      this.parsePostContent(); // parse blocks dynamically
     });
-    this.apiService.checkIfPostLiked(postId).subscribe(liked => this.isLiked.set(liked));
+    this.apiService.checkIfPostLiked(postId).subscribe({
+      next: (liked) => this.isLiked.set(liked),
+      error: () => {} // Silently ignore like check errors
+    });
   }
   
 
@@ -228,6 +248,21 @@ export class PostDetailComponent {
     });
   }
 
+  deletePost(postId: number) {
+    this.deletingPost.set(true);
+    this.apiService.deletePost(postId).subscribe({
+      next: () => {
+        this.notificationService.success('Post deleted successfully');
+        this.deletingPost.set(false);
+        this.router.navigate(['/']);
+      },
+      error: () => {
+        this.deletingPost.set(false);
+        this.notificationService.error('Failed to delete post');
+      }
+    });
+  }
+
   private refreshPost() {
     const post = this.post();
     if (post?.id) {
@@ -382,4 +417,8 @@ export class PostDetailComponent {
     );
   }
 
+  isAdmin(): boolean {
+    const user = this.currentUser();
+    return user?.role?.includes('ADMIN') || false;
+  }
 }

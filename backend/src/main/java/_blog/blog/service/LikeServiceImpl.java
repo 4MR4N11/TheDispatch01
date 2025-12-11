@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
+import _blog.blog.exception.BadRequestException;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.repository.PostRepository;
 import _blog.blog.repository.UserRepository;
 
@@ -27,12 +29,12 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void likePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         if (post.getLikedBy().contains(user)) {
-            throw new RuntimeException("Post already liked by user");
+            throw new BadRequestException("Post already liked by user");
         }
 
         post.getLikedBy().add(user);
@@ -46,14 +48,14 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void unlikePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         if (!post.getLikedBy().contains(user)) {
-            throw new RuntimeException("Post not liked by user");
+            throw new BadRequestException("Post not liked by user");
         }
-        
+
         post.getLikedBy().remove(user);
         postRepository.save(post);
     }
@@ -62,10 +64,10 @@ public class LikeServiceImpl implements LikeService {
     @Transactional(readOnly = true)
     public boolean isPostLikedByUser(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         return post.getLikedBy().contains(user);
     }
 
@@ -73,8 +75,8 @@ public class LikeServiceImpl implements LikeService {
     @Transactional(readOnly = true)
     public long getPostLikeCount(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+
         return post.getLikedBy().size();
     }
 
@@ -82,8 +84,8 @@ public class LikeServiceImpl implements LikeService {
     @Transactional(readOnly = true)
     public List<String> getUsersWhoLikedPost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+
         return post.getLikedBy().stream()
                 .map(User::getUsername)
                 .collect(Collectors.toList());
@@ -93,8 +95,8 @@ public class LikeServiceImpl implements LikeService {
     @Transactional(readOnly = true)
     public List<Long> getLikedPostsByUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         return postRepository.findPostsLikedByUser(user.getId());
     }
 }

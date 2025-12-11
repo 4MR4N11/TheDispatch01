@@ -31,6 +31,7 @@ export class AdminComponent implements OnInit {
   protected readonly currentPage = signal(0);
   protected readonly totalPages = signal(0);
   protected readonly failedAvatars = signal<Set<string>>(new Set());
+  protected readonly promoting = signal(false);
 
   ngOnInit() {
     this.loadReports();
@@ -303,5 +304,22 @@ export class AdminComponent implements OnInit {
   isAvatarFailed(avatarUrl: string | null | undefined): boolean {
     if (!avatarUrl) return false;
     return this.failedAvatars().has(avatarUrl);
+  }
+
+  promoteToAdmin(userId: number) {
+    if (confirm('Are you sure you want to promote this user to admin?')) {
+      this.promoting.set(true);
+      this.apiService.promoteToAdmin(userId).subscribe({
+        next: () => {
+          this.notificationService.success('User promoted to admin successfully');
+          this.promoting.set(false);
+          this.loadUsers();
+        },
+        error: () => {
+          this.promoting.set(false);
+          this.notificationService.error('Failed to promote user to admin');
+        }
+      });
+    }
   }
 }

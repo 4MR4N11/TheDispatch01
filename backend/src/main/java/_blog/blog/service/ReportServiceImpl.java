@@ -19,6 +19,8 @@ import _blog.blog.entity.Report;
 import _blog.blog.entity.User;
 import _blog.blog.enums.ReportStatus;
 import _blog.blog.enums.ReportType;
+import _blog.blog.exception.BadRequestException;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.repository.PostReportRepository;
 import _blog.blog.repository.PostRepository;
 import _blog.blog.repository.ReportRepository;
@@ -48,18 +50,18 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public Report reportUser(Long reporterId, Long reportedUserId, String reason) {
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reporter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
         User reportedUser = userRepository.findById(reportedUserId)
-                .orElseThrow(() -> new RuntimeException("Reported user not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", reportedUserId));
+
         if (reporterId.equals(reportedUserId)) {
-            throw new RuntimeException("You cannot report yourself");
+            throw new BadRequestException("You cannot report yourself");
         }
-        
+
         if (reportRepository.existsByReporterAndReportedUser(reporter, reportedUser)) {
-            throw new RuntimeException("You have already reported this user");
+            throw new BadRequestException("You have already reported this user");
         }
-        
+
         Report report = Report.builder()
                 .reporter(reporter)
                 .reportedUser(reportedUser)
@@ -67,25 +69,25 @@ public class ReportServiceImpl implements ReportService {
                 .reason(reason)
                 .status(ReportStatus.PENDING)
                 .build();
-        
+
         return reportRepository.save(report);
     }
 
     @Override
     public Report reportPost(Long reporterId, Long reportedPostId, String reason) {
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reporter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
         Post reportedPost = postRepository.findById(reportedPostId)
-                .orElseThrow(() -> new RuntimeException("Reported post not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Post", reportedPostId));
+
         if (reportedPost.getAuthor().getId().equals(reporterId)) {
-            throw new RuntimeException("You cannot report your own post");
+            throw new BadRequestException("You cannot report your own post");
         }
-        
+
         if (reportRepository.existsByReporterAndReportedPostId(reporter, reportedPostId)) {
-            throw new RuntimeException("You have already reported this post");
+            throw new BadRequestException("You have already reported this post");
         }
-        
+
         Report report = Report.builder()
                 .reporter(reporter)
                 .reportedPost(reportedPost)
@@ -93,32 +95,32 @@ public class ReportServiceImpl implements ReportService {
                 .reason(reason)
                 .status(ReportStatus.PENDING)
                 .build();
-        
+
         return reportRepository.save(report);
     }
 
     @Override
     public PostReport createPostReport(Long reporterId, Long reportedPostId, String reason) {
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reporter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
         Post reportedPost = postRepository.findById(reportedPostId)
-                .orElseThrow(() -> new RuntimeException("Reported post not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Post", reportedPostId));
+
         if (reportedPost.getAuthor().getId().equals(reporterId)) {
-            throw new RuntimeException("You cannot report your own post");
+            throw new BadRequestException("You cannot report your own post");
         }
-        
+
         if (postReportRepository.existsByReporterAndReportedPost(reporter, reportedPost)) {
-            throw new RuntimeException("You have already reported this post");
+            throw new BadRequestException("You have already reported this post");
         }
-        
+
         PostReport postReport = PostReport.builder()
                 .reporter(reporter)
                 .reportedPost(reportedPost)
                 .reason(reason)
                 .status(ReportStatus.PENDING)
                 .build();
-        
+
         return postReportRepository.save(postReport);
     }
 
@@ -126,8 +128,8 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public List<ReportResponse> getUserReports(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         List<Report> reports = reportRepository.findByReporter(user);
         return reports.stream()
                 .map(this::mapToReportResponse)
@@ -180,7 +182,7 @@ public class ReportServiceImpl implements ReportService {
         );
 
         if (updated == 0) {
-            throw new RuntimeException("Failed to update report");
+            throw new ResourceNotFoundException("Report", reportId);
         }
 
         // Return fresh entity (optional)
@@ -191,10 +193,10 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public Report handleReport(Long reportId, Long adminId, AdminReportActionRequest request) {
         Report report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new RuntimeException("Report not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Report", reportId));
         User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", adminId));
+
         // Execute the requested action
         switch (request.getAction()) {
             case DISMISS:
@@ -205,7 +207,7 @@ public class ReportServiceImpl implements ReportService {
                     // TODO: Implement post deletion
                     report.setStatus(ReportStatus.APPROVED);
                 } else {
-                    throw new RuntimeException("Cannot delete post: This is not a post report");
+                    throw new BadRequestException("Cannot delete post: This is not a post report");
                 }
                 break;
             case BAN_USER:
@@ -221,20 +223,20 @@ public class ReportServiceImpl implements ReportService {
             default:
                 break;
         }
-        
+
         report.setHandledByAdmin(admin);
         report.setAdminResponse(request.getAdminResponse());
         report.setHandledAt(new Date());
-        
+
         return reportRepository.save(report);
     }
 
     @Override
     public PostReport handlePostReport(Long postReportId, Long adminId, AdminReportActionRequest request) {
         PostReport postReport = postReportRepository.findById(postReportId)
-                .orElseThrow(() -> new RuntimeException("Post report not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("PostReport", postReportId));
         User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", adminId));
         
         // Execute the requested action
         switch (request.getAction()) {
@@ -290,10 +292,10 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public boolean hasUserAlreadyReportedUser(Long reporterId, Long reportedUserId) {
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reporter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
         User reportedUser = userRepository.findById(reportedUserId)
-                .orElseThrow(() -> new RuntimeException("Reported user not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", reportedUserId));
+
         return reportRepository.existsByReporterAndReportedUser(reporter, reportedUser);
     }
 
@@ -301,11 +303,11 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public boolean hasUserAlreadyReportedPost(Long reporterId, Long postId) {
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new RuntimeException("Reporter not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
+
         return reportRepository.existsByReporterAndReportedPostId(reporter, postId) ||
-               postReportRepository.existsByReporterAndReportedPost(reporter, 
-                   postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found")));
+               postReportRepository.existsByReporterAndReportedPost(reporter,
+                   postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("Post", postId)));
     }
 
     // Helper methods
