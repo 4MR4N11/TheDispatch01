@@ -37,6 +37,11 @@ export class EditPostComponent implements OnInit, OnDestroy {
   protected readonly updating = signal(false);
   protected readonly loading = signal(true);
 
+  // Track uploaded file URLs for cleanup
+  private uploadedFileUrls = new Set<string>();
+  private previousBlockUrls = new Set<string>();
+  private initialBlockUrls = new Set<string>(); // URLs from loaded content (don't delete these)
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -71,6 +76,10 @@ export class EditPostComponent implements OnInit, OnDestroy {
 
         this.content.set(contentData);
         this.loading.set(false);
+
+        // Track initial URLs from loaded content (don't delete these)
+        this.initialBlockUrls = this.extractBlockUrls(contentData);
+        this.previousBlockUrls = new Set(this.initialBlockUrls);
 
         // Initialize editor after content is loaded
         setTimeout(() => this.initializeEditor(), 100);
@@ -116,6 +125,9 @@ export class EditPostComponent implements OnInit, OnDestroy {
       onChange: async () => {
         const output = await this.editor.save();
         this.content.set(output);
+
+        // Check for removed blocks and delete their files (only newly uploaded ones)
+        this.cleanupRemovedBlockFiles(output);
       }
     });
   }
@@ -222,6 +234,11 @@ export class EditPostComponent implements OnInit, OnDestroy {
       .then(response => response.json())
       .then(data => {
         if (data.success === 1) {
+          // Track uploaded URL for cleanup
+          const url = data.file?.url || data.url;
+          if (url) {
+            this.uploadedFileUrls.add(url);
+          }
           resolve(data);
         } else {
           reject(data.error || 'Upload failed');
@@ -267,6 +284,8 @@ export class EditPostComponent implements OnInit, OnDestroy {
         if (data.success === 1 && data.file && data.file.url) {
           const videoUrl = data.file.url;
           const fullUrl = videoUrl.startsWith('http') ? videoUrl : `${environment.apiUrl}${videoUrl}`;
+          // Track uploaded URL for cleanup
+          this.uploadedFileUrls.add(fullUrl);
           resolve({
             success: 1,
             file: {
@@ -282,6 +301,59 @@ export class EditPostComponent implements OnInit, OnDestroy {
         reject(error);
         this.notificationService.error('Failed to upload video');
       });
+    });
+  }
+
+  // Extract URLs from EditorJS content blocks
+  private extractBlockUrls(content: any): Set<string> {
+    const urls = new Set<string>();
+    if (content && content.blocks) {
+      for (const block of content.blocks) {
+        if (block.type === 'image' && block.data?.file?.url) {
+          urls.add(block.data.file.url);
+        } else if (block.type === 'video' && block.data?.file?.url) {
+          urls.add(block.data.file.url);
+        }
+      }
+    }
+    return urls;
+  }
+
+  // Check for removed blocks and delete their files from server (only newly uploaded ones)
+  private cleanupRemovedBlockFiles(currentContent: any) {
+    const currentUrls = this.extractBlockUrls(currentContent);
+
+    // Find URLs that were in previous content but not in current
+    for (const url of this.previousBlockUrls) {
+      // Only delete if it was newly uploaded (not from initial content)
+      if (!currentUrls.has(url) && this.uploadedFileUrls.has(url) && !this.initialBlockUrls.has(url)) {
+        this.deleteUploadedFile(url);
+        this.uploadedFileUrls.delete(url);
+      }
+    }
+
+    // Update previous URLs for next comparison
+    this.previousBlockUrls = currentUrls;
+  }
+
+  // Delete file from server
+  private deleteUploadedFile(url: string) {
+    fetch(`${environment.apiUrl}/uploads/delete`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('File deleted:', url);
+      }
+    })
+    .catch(error => {
+      console.error('Failed to delete file:', error);
     });
   }
 

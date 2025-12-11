@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -175,6 +177,49 @@ public class UploadController {
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", 0,
                 "error", "Failed to upload video: " + e.getMessage()
+            ));
+        }
+    }
+
+    // Delete uploaded file endpoint
+    @DeleteMapping("/delete")
+    public ResponseEntity<Map<String, Object>> deleteFile(@RequestBody Map<String, String> request) {
+        String url = request.get("url");
+
+        if (url == null || url.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "URL is required"));
+        }
+
+        try {
+            // Extract filename from URL (e.g., http://localhost:8080/uploads/abc123.jpg -> abc123.jpg)
+            String filename = url.substring(url.lastIndexOf("/") + 1);
+
+            // Validate filename to prevent path traversal attacks
+            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Invalid filename"));
+            }
+
+            Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Path filePath = uploadDir.resolve(filename).normalize();
+
+            // Ensure the file is within the upload directory (prevent path traversal)
+            if (!filePath.startsWith(uploadDir)) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Invalid file path"));
+            }
+
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                log.info("File deleted successfully: {}", filename);
+                return ResponseEntity.ok(Map.of("success", true, "message", "File deleted successfully"));
+            } else {
+                log.warn("File not found for deletion: {}", filename);
+                return ResponseEntity.ok(Map.of("success", true, "message", "File already deleted or not found"));
+            }
+        } catch (IOException e) {
+            log.error("Failed to delete file: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "error", "Failed to delete file: " + e.getMessage()
             ));
         }
     }
