@@ -24,3 +24,5 @@ target/
 dist/
 build/
 .claude
+/node_modules
+node_modules
