@@ -122,17 +122,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Prevent multiple simultaneous loads
     if (this.currentPage() >= this.totalPages() || this.isLoadingMore()) {
-      console.log('Skipping load - condition not met');
       return;
     }
-
-    console.log('Loading page:', this.currentPage() + 1);
     this.loading.set(reset);
     this.isLoadingMore.set(true);
 
     this.apiService.getFeed(this.currentPage(), this.pageSize).subscribe({
       next: (response: any) => {
-        console.log('Loaded posts:', response.posts.length, 'Total pages:', response.totalPages);
         
         const currentPosts = this.posts();
         const newPosts = [...currentPosts, ...response.posts];
@@ -447,7 +443,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.scrollSentinel = document.getElementById('scroll-sentinel');
     
     if (!this.scrollSentinel) {
-      console.log('Scroll sentinel not found, retrying in 100ms');
       setTimeout(() => this.setupIntersectionObserver(), 100);
       return;
     }
@@ -458,9 +453,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       if (entry.isIntersecting && 
           !this.isLoadingMore() && 
           this.currentPage() < this.totalPages()) {
-        
-        console.log('Loading more posts, current page:', this.currentPage());
-        this.loadFeed(false);
+          this.loadFeed(false);
       }
     }, {
       root: null,
@@ -469,7 +462,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.observer.observe(this.scrollSentinel);
-    console.log('IntersectionObserver set up');
   }
 
   ngOnDestroy() {

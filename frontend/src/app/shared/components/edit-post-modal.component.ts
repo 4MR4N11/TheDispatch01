@@ -343,11 +343,6 @@ export class EditPostModalComponent implements OnInit, AfterViewInit, OnDestroy 
       body: JSON.stringify({ url })
     })
     .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        console.log('File deleted:', url);
-      }
-    })
     .catch(error => {
       console.error('Failed to delete file:', error);
     });

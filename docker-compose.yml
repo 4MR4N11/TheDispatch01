@@ -72,7 +72,7 @@ services:
       dockerfile: Dockerfile
     container_name: dispatch-frontend
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
     ports:
       - "4200:4200"
     depends_on:

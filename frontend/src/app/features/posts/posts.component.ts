@@ -96,7 +96,7 @@ export class PostDetailComponent {
       this.blocks.set([]);
       return;
     }
-
+    
     try {
       const contentJSON =
         typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
@@ -225,7 +225,6 @@ export class PostDetailComponent {
       });
       const htmlBlocks = edjsParser.parse(contentJSON);
       const html = htmlBlocks;
-      console.log('Parsed HTML:', html);
       return this.sanitizer.bypassSecurityTrustHtml(html);
     } catch (err) {
       console.error('Error parsing Editor.js content', err);
@@ -412,7 +411,6 @@ export class PostDetailComponent {
   }
 
   private sortComments(comments: any[]) {
-    console.log('Sorting comments:', comments);
     return [...comments].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );

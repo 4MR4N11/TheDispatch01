@@ -65,6 +65,7 @@ export class EditPostComponent implements OnInit, OnDestroy {
 
         // Parse content from JSON string to Editor.js data
         let contentData;
+        console.log('Loaded post content:', post.content);
         try {
           contentData = typeof post.content === 'string'
             ? JSON.parse(post.content)
@@ -356,11 +357,6 @@ export class EditPostComponent implements OnInit, OnDestroy {
       body: JSON.stringify({ url })
     })
     .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        console.log('File deleted:', url);
-      }
-    })
     .catch(error => {
       console.error('Failed to delete file:', error);
     });

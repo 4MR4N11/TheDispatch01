@@ -70,17 +70,32 @@
             @if (block.type === 'list' && block.data.style === 'unordered') {
               <ul>
                 @for (item of block.data.items; track $index) {
-                  <li>{{ item }}</li>
+                  <li>{{ item.content }}</li>
                 }
               </ul>
             }
             @if (block.type === 'list' && block.data.style === 'ordered') {
               <ol>
                 @for (item of block.data.items ; track $index) {
-                  <li>{{ item }}</li>
+                  <li>{{ item.content }}</li>
                 }
               </ol>
             }
+
+            @if (block.type === 'list' && block.data.style === 'checklist') {
+              <!-- <ul class="checklist"> -->
+                @for (item of block.data.items; track $index) {
+                  <!-- <li> -->
+                    <input type="checkbox"
+                          disabled
+                          [checked]="item.meta?.checked">
+                    <span>  {{ item.content }}</span>
+                    <br />
+                  <!-- </li> -->
+                }
+              <!-- </ul> -->
+            }
+
 
             <!-- Images -->
             @if (block.type === 'image') {
