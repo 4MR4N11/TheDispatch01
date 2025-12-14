@@ -3,6 +3,8 @@ package _blog.blog.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,14 +12,11 @@ import _blog.blog.dto.PostRequest;
 import _blog.blog.dto.PostResponse;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
-import _blog.blog.mapper.PostMapper;
 import _blog.blog.exception.ResourceNotFoundException;
+import _blog.blog.mapper.PostMapper;
 import _blog.blog.repository.NotificationRepository;
 import _blog.blog.repository.PostRepository;
 import _blog.blog.repository.ReportRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 
 @Service
 public class PostServiceImpl implements PostService {

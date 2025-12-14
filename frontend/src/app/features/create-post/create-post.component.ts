@@ -51,6 +51,12 @@ export class CreatePostComponent implements OnInit, OnDestroy {
             uploader: {
               uploadByFile: (file: File) => {
                 return this.uploadEditorImage(file);
+              },
+              uploadByUrl: (url: string) => {
+                return Promise.resolve({
+                  success: 1,
+                  file: { url }
+                });
               }
             }
           }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import _blog.blog.dto.CommentResponse;
 import _blog.blog.entity.Comment;
@@ -46,10 +47,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteComment(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
             throw new ResourceNotFoundException("Comment", commentId);
         }
+        // Delete notifications referencing this comment first to avoid FK constraint violation
+        notificationService.deleteNotificationsByCommentId(commentId);
         commentRepository.deleteById(commentId);
     }
 

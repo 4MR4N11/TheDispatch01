@@ -22,4 +22,5 @@ public interface NotificationService {
     void notifyPostLike(User liker, Post post);
     void notifyPostComment(User commenter, Post post, Comment comment);
     void notifyCommentReply(User replier, Comment parentComment, Comment reply);
+    void deleteNotificationsByCommentId(Long commentId);
 }

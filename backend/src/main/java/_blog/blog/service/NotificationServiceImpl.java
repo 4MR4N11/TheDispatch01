@@ -119,6 +119,12 @@ public class NotificationServiceImpl implements NotificationService {
                 parentComment.getPost(), reply);
     }
 
+    @Override
+    @Transactional
+    public void deleteNotificationsByCommentId(Long commentId) {
+        notificationRepository.deleteByCommentId(commentId);
+    }
+
     private NotificationDto toDto(Notification notification) {
         return NotificationDto.builder()
                 .id(notification.getId())

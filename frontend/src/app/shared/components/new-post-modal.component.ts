@@ -59,6 +59,12 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
             uploader: {
               uploadByFile: (file: File) => {
                 return this.uploadEditorImage(file);
+              },
+              uploadByUrl: (url: string) => {
+                return Promise.resolve({
+                  success: 1,
+                  file: { url }
+                });
               }
             }
           }

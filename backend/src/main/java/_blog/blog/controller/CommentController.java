@@ -3,13 +3,19 @@ package _blog.blog.controller;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import _blog.blog.dto.CommentRequest;
 import _blog.blog.dto.CommentResponse;
@@ -19,8 +25,7 @@ import _blog.blog.entity.User;
 import _blog.blog.service.CommentService;
 import _blog.blog.service.PostService;
 import _blog.blog.service.UserService;
-
-import java.util.Date;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/comments")
@@ -47,7 +52,7 @@ public class CommentController {
         Post post = postService.getPostById(postId);
 
         Comment comment = Comment.builder()
-                .content(request.getContent())
+                .content(request.getContent().trim())
                 .author(user)
                 .post(post)
                 .build();

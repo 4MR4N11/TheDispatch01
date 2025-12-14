@@ -14,10 +14,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { calculateReadingTime } from '../../shared/utils/reading-time.util';
 import { environment } from '../../../environments/environment';
 import { EditPostModalComponent } from '../../shared/components/edit-post-modal.component';
+import { NotFoundComponent } from '../not-found/not-found.component';
 @Component({
   selector: 'app-post-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, MatIconModule, MatButtonModule, EditPostModalComponent, RouterLink],
+  imports: [CommonModule, FormsModule, DatePipe, MatIconModule, MatButtonModule, EditPostModalComponent, NotFoundComponent],
   templateUrl: './posts.component.html',
   styleUrl: './posts.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,10 +85,10 @@ export class PostDetailComponent {
     });
     this.apiService.checkIfPostLiked(postId).subscribe({
       next: (liked) => this.isLiked.set(liked),
-      error: () => {} // Silently ignore like check errors
+      error: () => { } // Silently ignore like check errors
     });
   }
-  
+
 
   private parsePostContent() {
     const post = this.post();
@@ -214,7 +215,7 @@ export class PostDetailComponent {
 
       const edjsParser = edjsHTML({
         video: (block: any) => {
-        // Extract the video URL from block.data.file.url
+          // Extract the video URL from block.data.file.url
           const url = block.data?.file?.url || '';
           if (!url) return '';
           const caption = block.data.caption || '';

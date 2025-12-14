@@ -567,6 +567,7 @@
   margin-bottom: 0.75rem;
   text-align: left;
   text-indent: 0;
+  white-space: pre-line;
 }
 
 .comment-actions {
@@ -958,7 +959,7 @@
   text-align: center;
 }
 
-/* Error State */
+/* Error State
 .error-container {
   display: flex;
   flex-direction: column;
@@ -1012,7 +1013,7 @@
 .back-home-btn:hover {
   background: var(--color-accent);
   transform: translateY(-2px);
-}
+} */
 
 .spinner-large {
   width: 48px;

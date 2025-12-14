@@ -356,24 +356,7 @@
       </app-edit-post-modal>
     }
   } @else if (error()) {
-    <div class="error-container">
-      <div class="error-icon">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-      </div>
-      <h2 class="error-title">{{ error() }}</h2>
-      <p class="error-message">The post you're looking for doesn't exist or has been removed.</p>
-      <a routerLink="/home" class="back-home-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        Back to Home
-      </a>
-    </div>
+    <app-not-found></app-not-found>
   } @else if (loading()) {
     <div class="loading-container">
       <div class="spinner-large"></div>

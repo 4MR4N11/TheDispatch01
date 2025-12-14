@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   signal,
   OnInit,
@@ -22,11 +21,12 @@ import {
   PostResponse,
 } from '../../shared/models/models';
 import { environment } from '../../../environments/environment';
+import { NotFoundComponent } from '../not-found/not-found.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, MatIconModule, MatButtonModule, RouterLink],
+  imports: [CommonModule, DatePipe, FormsModule, MatIconModule, MatButtonModule, NotFoundComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

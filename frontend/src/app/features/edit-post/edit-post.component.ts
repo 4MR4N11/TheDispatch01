@@ -107,6 +107,12 @@ export class EditPostComponent implements OnInit, OnDestroy {
             uploader: {
               uploadByFile: (file: File) => {
                 return this.uploadEditorImage(file);
+              },
+              uploadByUrl: (url: string) => {
+                return Promise.resolve({
+                  success: 1,
+                  file: { url }
+                });
               }
             }
           }
@@ -319,16 +325,19 @@ export class EditPostComponent implements OnInit, OnDestroy {
     return urls;
   }
 
-  // Check for removed blocks and delete their files from server (only newly uploaded ones)
+  // Check for removed blocks and delete their files from server
   private cleanupRemovedBlockFiles(currentContent: any) {
     const currentUrls = this.extractBlockUrls(currentContent);
 
     // Find URLs that were in previous content but not in current
     for (const url of this.previousBlockUrls) {
-      // Only delete if it was newly uploaded (not from initial content)
-      if (!currentUrls.has(url) && this.uploadedFileUrls.has(url) && !this.initialBlockUrls.has(url)) {
-        this.deleteUploadedFile(url);
-        this.uploadedFileUrls.delete(url);
+      if (!currentUrls.has(url)) {
+        // Delete if it's a local upload (newly uploaded or from initial content)
+        if (this.uploadedFileUrls.has(url) || this.initialBlockUrls.has(url)) {
+          this.deleteUploadedFile(url);
+          this.uploadedFileUrls.delete(url);
+          this.initialBlockUrls.delete(url);
+        }
       }
     }
 
