@@ -417,4 +417,144 @@
   .form-title {
     font-size: 1.75rem;
   }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-icon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .auth-container {
+    gap: 2rem;
+  }
+
+  .brand-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .brand-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-name {
+    font-size: 2rem;
+  }
+
+  .hero-tagline {
+    font-size: 1.125rem;
+  }
+
+  .hero-description {
+    font-size: 0.9375rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .feature-card {
+    padding: 1rem;
+  }
+
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .feature-title {
+    font-size: 1rem;
+  }
+
+  .feature-desc {
+    font-size: 0.8125rem;
+  }
+
+  .demo-accounts {
+    padding: 1rem;
+  }
+
+  .demo-accounts h3 {
+    font-size: 1rem;
+  }
+
+  .demo-accounts p {
+    font-size: 0.8125rem;
+  }
+
+  .auth-form-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .form-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .form-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 1rem;
+  }
+
+  .form-title {
+    font-size: 1.5rem;
+  }
+
+  .form-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .form-row {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-field {
+    margin-bottom: 1rem;
+  }
+
+  .form-field label {
+    font-size: 0.75rem;
+  }
+
+  .input-field {
+    padding: 0.75rem;
+    font-size: 0.9375rem;
+  }
+
+  .btn-submit {
+    padding: 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .form-footer {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .form-footer p {
+    font-size: 0.875rem;
+  }
+
+  .btn-link {
+    padding: 0.625rem 1rem;
+    font-size: 0.75rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .error-alert {
+    font-size: 0.75rem;
+    padding: 0.75rem;
+  }
 }
