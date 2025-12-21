@@ -77,8 +77,8 @@ In IntelliJ IDEA or Eclipse, configure environment variables in the run configur
 The API will be available at `http://localhost:8080`
 
 ### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login
+- `POST /auth/register` - Register new user
+- `POST /auth/login` - Login
 
 ### Posts
 - `GET /posts/all` - Get all posts

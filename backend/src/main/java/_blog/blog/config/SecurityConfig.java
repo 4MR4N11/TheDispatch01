@@ -47,7 +47,6 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()  // Health check endpoint
                 .requestMatchers(HttpMethod.POST, "/uploads/upload").authenticated()  // Generic file upload
                 .requestMatchers(HttpMethod.POST, "/uploads/image").authenticated()  // Image upload (EditorJS)
@@ -60,18 +59,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            // ✅ SECURITY FIX: Add security headers
             .headers(headers -> headers
-                .frameOptions(frame -> frame.deny())  // Prevent clickjacking
-                .xssProtection(xss -> xss.disable())  // Modern browsers use CSP instead
+                .frameOptions(frame -> frame.deny())  // Prevent clickjacking iframe
                 .contentTypeOptions(withDefaults())  // Prevent MIME sniffing
-                .httpStrictTransportSecurity(hsts -> hsts
-                    .includeSubDomains(true)
-                    .maxAgeInSeconds(31536000)  // 1 year
-                )
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; video-src 'self' data:;")
-                )
+                // .contentSecurityPolicy(csp -> csp
+                //     .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; video-src 'self' data:;")
+                // )
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -84,13 +77,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        // ✅ SECURITY FIX: Explicit headers instead of wildcard when using credentials
         configuration.setAllowedHeaders(Arrays.asList(
             "Content-Type",
-            "Authorization",
-            "X-Requested-With",
-            "Accept",
-            "Origin"
+            "Authorization"
         ));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

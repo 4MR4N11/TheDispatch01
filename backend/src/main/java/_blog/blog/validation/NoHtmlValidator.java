@@ -35,8 +35,8 @@ public class NoHtmlValidator implements ConstraintValidator<NoHtml, String> {
             return true;
         }
 
-        // Empty strings are valid
-        if (value.trim().isEmpty()) {
+        value = value.trim();
+        if (value.isEmpty()) {
             return true;
         }
 
