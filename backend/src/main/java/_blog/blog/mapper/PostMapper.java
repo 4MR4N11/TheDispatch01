@@ -12,8 +12,8 @@ public class PostMapper {
         String mediaType = detectMediaType(request.getMedia_url());
 
         return Post.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
+                .title(request.getTitle().trim())
+                .content(request.getContent().trim())
                 .mediaType(mediaType)
                 .mediaUrl(request.getMedia_url())
                 .author(author)

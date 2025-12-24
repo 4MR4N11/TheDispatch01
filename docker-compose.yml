@@ -63,7 +63,7 @@ services:
     networks:
       - dispatch-network
     volumes:
-      - ./backend/uploads:/app/uploads
+      - uploads-data:/app/uploads
 
   # Angular Frontend
   frontend:
@@ -86,3 +86,4 @@ networks:
 
 volumes:
   postgres-data:
+  uploads-data:

@@ -25,10 +25,16 @@
         />
       </div>
 
-      <!-- Content Rich Text Editor -->
+      <!-- Content Textarea -->
       <div class="form-field editor-field">
         <label class="form-label">Content</label>
-        <div #editorHolder class="editorjs-container"></div>
+        <textarea
+          class="content-textarea"
+          placeholder="Write your post content here..."
+          [(ngModel)]="content"
+          [disabled]="creating()"
+          rows="12"
+        ></textarea>
       </div>
 
       <!-- Media Section -->

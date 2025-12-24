@@ -44,6 +44,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post createPost(PostRequest request, User author) {
+        if (request.getTitle() == null || request.getTitle().trim().isBlank()) {
+            throw new IllegalArgumentException("Post title cannot be empty");
+        }
+        if (request.getContent() == null || request.getContent().trim().isBlank()) {
+            throw new IllegalArgumentException("Post content cannot be empty");
+        }
         Post post = PostMapper.toEntity(request, author);
         return postRepository.save(post);
     }
@@ -53,10 +59,15 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
 
-        post.setTitle(request.getTitle());
-        post.setContent(request.getContent());
-        post.setMediaType(request.getMedia_type());
-        post.setMediaUrl(request.getMedia_url());
+        if (request.getTitle() == null || request.getTitle().trim().isBlank()) {
+            throw new IllegalArgumentException("Post title cannot be empty");
+        }
+        if (request.getContent() == null || request.getContent().trim().isBlank()) {
+            throw new IllegalArgumentException("Post content cannot be empty");
+        }
+
+        post = PostMapper.toEntity(request, post.getAuthor());
+        post.setId(postId);
 
         return postRepository.save(post);
     }

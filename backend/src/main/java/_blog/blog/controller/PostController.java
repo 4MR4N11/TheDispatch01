@@ -147,6 +147,7 @@ public class PostController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createPost(@Valid @RequestBody PostRequest request, Authentication auth) {
+
         User user = userService.getUserByUsername(auth.getName());
         postService.createPost(request, user);
         return ResponseEntity.ok("Post has been created.");

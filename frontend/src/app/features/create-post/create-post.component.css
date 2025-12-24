@@ -109,12 +109,24 @@
   margin: 1rem 0;
 }
 
-.editorjs-container {
+.content-textarea {
+  width: 100%;
   border: 2px solid var(--color-border);
   background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   min-height: 400px;
   padding: 1rem;
   border-radius: 8px;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  white-space: pre-wrap; /* Preserve formatting */
+}
+
+.content-textarea:focus {
+  outline: none;
+  border-color: var(--color-text-primary);
 }
 
 
@@ -131,7 +143,8 @@
   border: 2px solid var(--color-border);
 }
 
-.preview-image {
+.preview-image,
+.preview-video {
   width: 100%;
   max-height: 400px;
   object-fit: cover;

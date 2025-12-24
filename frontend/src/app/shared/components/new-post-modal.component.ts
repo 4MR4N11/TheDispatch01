@@ -1,10 +1,5 @@
-import { Component, ElementRef, ViewChild, EventEmitter, inject, Output, signal, AfterViewInit, OnDestroy } from '@angular/core';
-
+import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import EditorJS from '@editorjs/editorjs';
-import Header from '@editorjs/header';
-import List from '@editorjs/list';
-import ImageTool from '@editorjs/image';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { environment } from '../../../environments/environment';
@@ -16,195 +11,20 @@ import { environment } from '../../../environments/environment';
   templateUrl: './new-post-modal.component.html',
   styleUrl: './new-post-modal.component.css',
 })
-export class NewPostModalComponent implements AfterViewInit, OnDestroy {
+export class NewPostModalComponent {
   @Output() close = new EventEmitter<void>();
   @Output() postCreated = new EventEmitter<void>();
-  @ViewChild('editorHolder', { static: false }) editorHolder!: ElementRef;
 
-  private editor!: EditorJS;
   private readonly apiService = inject(ApiService);
   private readonly notificationService = inject(NotificationService);
 
   protected readonly title = signal('');
-  protected readonly content = signal<any>(null);
+  protected readonly content = signal(''); // Plain text content
   protected readonly mediaUrl = signal('');
   protected readonly selectedFile = signal<File | null>(null);
   protected readonly filePreviewUrl = signal<string>('');
   protected readonly uploading = signal(false);
   protected readonly creating = signal(false);
-  protected readonly editorReady = signal(false);
-
-  ngAfterViewInit() {
-    // Initialize editor after view is ready
-    setTimeout(() => this.initializeEditor(), 100);
-  }
-
-  ngOnDestroy(): void {
-    this.editor?.destroy();
-  }
-
-  private initializeEditor() {
-    if (!this.editorHolder) return;
-
-    this.editor = new EditorJS({
-      holder: this.editorHolder.nativeElement,
-      placeholder: 'Write your post content here...',
-      autofocus: true,
-      tools: {
-        header: Header,
-        list: List,
-        image: {
-          class: ImageTool,
-          config: {
-            uploader: {
-              uploadByFile: (file: File) => {
-                return this.uploadEditorImage(file);
-              },
-              uploadByUrl: (url: string) => {
-                return Promise.resolve({
-                  success: 1,
-                  file: { url }
-                });
-              }
-            }
-          }
-        },
-        video: {
-          class: this.createVideoTool(),
-          config: {
-            uploader: {
-              uploadByFile: (file: File) => {
-                return this.uploadEditorVideo(file);
-              }
-            }
-          }
-        }
-      },
-      onChange: async () => {
-        const output = await this.editor.save();
-        this.content.set(output);
-      },
-      onReady: () => {
-        this.editorReady.set(true);
-      }
-    });
-  }
-
-  // Create a simple video tool class
-  private createVideoTool() {
-    const self = this;
-    return class VideoTool {
-      static get toolbox() {
-        return {
-          title: 'Video',
-          icon: '<svg class="icon icon--play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'
-        };
-      }
-
-      static get isInline() {
-        return false;
-      }
-
-      constructor({ data, config }: any) {
-        this.data = data;
-        this.config = config;
-      }
-
-      data: any;
-      config: any;
-
-      render() {
-        const container = document.createElement('div');
-        if (this.data && this.data.file && this.data.file.url) {
-          container.innerHTML = `<video controls width="100%" style="max-width: 100%"><source src="${this.data.file.url}" type="video/mp4"></video>`;
-        } else {
-          container.innerHTML = '<p>Upload a video</p>';
-        }
-        return container;
-      }
-
-      save() {
-        return this.data;
-      }
-    };
-  }
-
-  private uploadEditorImage(file: File): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      // Use cookies for authentication (withCredentials)
-      fetch(`${environment.apiUrl}/uploads/image`, {
-        method: 'POST',
-        credentials: 'include',  // ✅ Send HttpOnly cookies
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success === 1) {
-          resolve(data);
-        } else {
-          reject(data.error || 'Upload failed');
-          this.notificationService.error(data.error || 'Failed to upload image');
-        }
-      })
-      .catch(error => {
-        reject(error);
-        this.notificationService.error('Failed to upload image');
-      });
-    });
-  }
-
-  private uploadEditorVideo(file: File): Promise<any> {
-    return new Promise((resolve, reject) => {
-      // Validate file type
-      const validTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-      if (!validTypes.includes(file.type)) {
-        reject('Invalid file type. Please upload MP4, WebM, or OGG');
-        this.notificationService.error('Invalid file type. Please upload MP4, WebM, or OGG');
-        return;
-      }
-
-      // Validate file size (max 100MB)
-      const maxSize = 50 * 1024 * 1024;
-      if (file.size > maxSize) {
-        reject('File size must be less than 50MB');
-        this.notificationService.error('File size must be less than 50MB');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Use cookies for authentication (withCredentials)
-      fetch(`${environment.apiUrl}/uploads/video`, {
-        method: 'POST',
-        credentials: 'include',  // ✅ Send HttpOnly cookies
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success === 1 && data.file && data.file.url) {
-          const videoUrl = data.file.url;
-          const fullUrl = videoUrl.startsWith('http') ? videoUrl : `${environment.apiUrl}${videoUrl}`;
-          resolve({
-            success: 1,
-            file: {
-              url: fullUrl
-            }
-          });
-        } else {
-          reject(data.error || 'Upload failed');
-          this.notificationService.error(data.error || 'Failed to upload video');
-        }
-      })
-      .catch(error => {
-        reject(error);
-        this.notificationService.error('Failed to upload video');
-      });
-    });
-  }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -232,7 +52,6 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
   }
 
   clearFile() {
-    // Revoke preview URL
     const previewUrl = this.filePreviewUrl();
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -242,7 +61,6 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
   }
 
   removeMedia() {
-    // Revoke preview URL if it exists
     const previewUrl = this.filePreviewUrl();
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -252,35 +70,28 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
     this.selectedFile.set(null);
   }
 
-  async createPost() {
+  createPost() {
     const title = this.title();
     const content = this.content();
 
-    if (!title.trim() || !content || !content.blocks || content.blocks.length === 0) {
-      this.notificationService.warning('Title and content are required');
+    if (!title.trim()) {
+      this.notificationService.warning('Title is required');
       return;
     }
 
-    // Save current editor state
-    if (this.editor) {
-      try {
-        const savedContent = await this.editor.save();
-        this.content.set(savedContent);
-      } catch (e) {
-        console.error('Error saving editor content:', e);
-      }
+    if (!content.trim()) {
+      this.notificationService.warning('Content is required');
+      return;
     }
 
     this.creating.set(true);
 
-    // If file is selected, upload it first
     if (this.selectedFile()) {
       this.uploadFileAndCreatePost();
     } else {
-      // Otherwise create post with URL or no media
       this.createPostWithData({
         title,
-        content: JSON.stringify(this.content()),
+        content, // Plain text content
         media_type: this.detectMediaType(this.mediaUrl()),
         media_url: this.mediaUrl()
       });
@@ -306,7 +117,7 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
 
         this.createPostWithData({
           title: this.title(),
-          content: JSON.stringify(this.content()),
+          content: this.content(),
           media_type: mediaType,
           media_url: fullUrl
         });
@@ -322,7 +133,6 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
   private createPostWithData(postData: any) {
     this.apiService.createPost(postData).subscribe({
       next: () => {
-        // Clean up preview URL
         const previewUrl = this.filePreviewUrl();
         if (previewUrl) {
           URL.revokeObjectURL(previewUrl);
@@ -347,11 +157,10 @@ export class NewPostModalComponent implements AfterViewInit, OnDestroy {
     } else if (urlLower.match(/\.(mp4|webm|ogg|mov)$/)) {
       return 'video';
     }
-    return 'image'; // Default to image
+    return 'image';
   }
 
   closeModal() {
-    // Clean up preview URL
     const previewUrl = this.filePreviewUrl();
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);

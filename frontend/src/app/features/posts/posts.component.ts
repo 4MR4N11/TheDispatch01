@@ -1,7 +1,5 @@
 // src/app/features/posts/post-detail.component.ts
-import edjsHTML from 'editorjs-html';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -44,10 +42,7 @@ export class PostDetailComponent {
   protected readonly reportMessage = signal('');
   protected readonly showEditPostModal = signal(false);
   protected readonly failedAvatars = signal<Set<string>>(new Set());
-  private readonly sanitizer = inject(DomSanitizer);
   protected readonly deletingPost = signal(false);
-
-  protected readonly blocks = signal<any[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly reportCategories = [
@@ -71,7 +66,6 @@ export class PostDetailComponent {
           p.comments = this.sortComments(p.comments);
         }
         this.post.set(p);
-        this.parsePostContent();
         this.loading.set(false);
       },
       error: (err) => {
@@ -87,24 +81,6 @@ export class PostDetailComponent {
       next: (liked) => this.isLiked.set(liked),
       error: () => { } // Silently ignore like check errors
     });
-  }
-
-
-  private parsePostContent() {
-    const post = this.post();
-    if (!post?.content) {
-      this.blocks.set([]);
-      return;
-    }
-    
-    try {
-      const contentJSON =
-        typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
-      this.blocks.set(contentJSON.blocks || []);
-    } catch (err) {
-      console.error('Error parsing post content', err);
-      this.blocks.set([]);
-    }
   }
 
   addComment() {
@@ -216,34 +192,6 @@ export class PostDetailComponent {
         }
       });
   }
-
-  getPostHTML(): SafeHtml | null {
-    const post = this.post();
-    if (!post?.content) return null;
-
-    try {
-      const contentJSON =
-        typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
-
-      const edjsParser = edjsHTML({
-        video: (block: any) => {
-          // Extract the video URL from block.data.file.url
-          const url = block.data?.file?.url || '';
-          if (!url) return '';
-          const caption = block.data.caption || '';
-          return `<video controls src="${url}" style="max-width:100%; border-radius:8px;"></video>
-                  ${caption ? `<p class="video-caption">${caption}</p>` : ''}`;
-        },
-      });
-      const htmlBlocks = edjsParser.parse(contentJSON);
-      const html = htmlBlocks;
-      return this.sanitizer.bypassSecurityTrustHtml(html);
-    } catch (err) {
-      console.error('Error parsing Editor.js content', err);
-      return null;
-    }
-  }
-
 
   deleteComment(commentId: number) {
     this.deletingComment.set(commentId);

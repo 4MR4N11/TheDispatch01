@@ -48,75 +48,7 @@
 
         <!-- Post Content -->
         <div class="post-detail-content">
-          @for (block of blocks(); track $index) {
-
-            <!-- Headers -->
-            @if (block.type === 'header' && block.data.level === 1) {
-              <h1>{{ block.data.text }}</h1>
-            }
-            @if (block.type === 'header' && block.data.level === 2) {
-              <h2>{{ block.data.text }}</h2>
-            }
-            @if (block.type === 'header' && block.data.level === 3) {
-              <h3>{{ block.data.text }}</h3>
-            }
-
-            <!-- Paragraphs -->
-            @if (block.type === 'paragraph') {
-              <p>{{ block.data.text }}</p>
-            }
-
-            <!-- Lists -->
-            @if (block.type === 'list' && block.data.style === 'unordered') {
-              <ul>
-                @for (item of block.data.items; track $index) {
-                  <li>{{ item.content }}</li>
-                }
-              </ul>
-            }
-            @if (block.type === 'list' && block.data.style === 'ordered') {
-              <ol>
-                @for (item of block.data.items ; track $index) {
-                  <li>{{ item.content }}</li>
-                }
-              </ol>
-            }
-
-            @if (block.type === 'list' && block.data.style === 'checklist') {
-              <!-- <ul class="checklist"> -->
-                @for (item of block.data.items; track $index) {
-                  <!-- <li> -->
-                    <input type="checkbox"
-                          disabled
-                          [checked]="item.meta?.checked">
-                    <span>  {{ item.content }}</span>
-                    <br />
-                  <!-- </li> -->
-                }
-              <!-- </ul> -->
-            }
-
-
-            <!-- Images -->
-            @if (block.type === 'image') {
-              <div class="post-image">
-                <img [src]="block.data.file.url" [alt]="block.data.caption" style="max-width:100%;" />
-                <!-- @if (block.data.caption) {
-                  <p>{{ block.data.caption }}</p>
-                } -->
-              </div>
-            }
-
-            <!-- Videos -->
-            @if (block.type === 'video') {
-              <div class="post-video">
-                <video controls [src]="block.data.file.url" style="max-width:100%; border-radius: 8px;"></video>
-                @if (block.data.caption) {
-                  <p>{{ block.data.caption }}</p>
-                }
-              </div>
-            }
-          }
+          <div class="post-text-content">{{ p.content }}</div>
         </div>
 
 

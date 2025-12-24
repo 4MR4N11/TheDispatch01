@@ -1,10 +1,6 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import EditorJS from '@editorjs/editorjs';
-import Header from '@editorjs/header';
-import List from '@editorjs/list';
-import ImageTool from '@editorjs/image';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { environment } from '../../../environments/environment';
@@ -16,303 +12,31 @@ import { environment } from '../../../environments/environment';
   templateUrl: './create-post.component.html',
   styleUrl: './create-post.component.css',
 })
-export class CreatePostComponent implements OnInit, OnDestroy {
-
-  @ViewChild('editorHolder', { static: true }) editorHolder!: ElementRef;
-  private editor!: EditorJS;
-
+export class CreatePostComponent {
   private readonly apiService = inject(ApiService);
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
 
   protected readonly title = signal('');
-  protected readonly content = signal<any>(null); // store EditorJS JSON
+  protected readonly content = signal(''); // Plain text content
   protected readonly mediaUrl = signal('');
   protected readonly selectedFile = signal<File | null>(null);
   protected readonly filePreviewUrl = signal<string>('');
   protected readonly uploading = signal(false);
   protected readonly creating = signal(false);
-
-  // Track uploaded file URLs for cleanup
-  private uploadedFileUrls = new Set<string>();
-  private previousBlockUrls = new Set<string>();
-
-  ngOnInit(): void {
-    this.editor = new EditorJS({
-      holder: this.editorHolder.nativeElement,
-      placeholder: 'Write your post content here...',
-      autofocus: true,
-      tools: {
-        header: Header,
-        list: List,
-        image: {
-          class: ImageTool,
-          config: {
-            uploader: {
-              uploadByFile: (file: File) => {
-                return this.uploadEditorImage(file);
-              },
-              uploadByUrl: (url: string) => {
-                return Promise.resolve({
-                  success: 1,
-                  file: { url }
-                });
-              }
-            }
-          }
-        },
-        video: {
-          class: this.createVideoTool(),
-          config: {
-            uploader: {
-              uploadByFile: (file: File) => {
-                return this.uploadEditorVideo(file);
-              }
-            }
-          }
-        }
-      },
-      onChange: async () => {
-        const output = await this.editor.save();
-        this.content.set(output);
-
-        // Check for removed blocks and delete their files
-        this.cleanupRemovedBlockFiles(output);
-      }
-    });
-  }
-
-  private createVideoTool() {
-    const self = this;
-
-    return class VideoTool {
-      private data: any;
-      private wrapper: HTMLElement | null = null;
-
-      static get toolbox() {
-        return {
-          title: 'Video',
-          icon: '<svg width="17" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>'
-        };
-      }
-
-      constructor({ data }: { data: any }) {
-        this.data = data || {};
-      }
-
-      render() {
-        this.wrapper = document.createElement('div');
-        this.wrapper.classList.add('video-tool');
-
-        if (this.data && this.data.file && this.data.file.url) {
-          this.showVideo(this.data.file.url);
-        } else {
-          this.showUploader();
-        }
-
-        return this.wrapper;
-      }
-
-      private showUploader() {
-        const uploadWrapper = document.createElement('div');
-        uploadWrapper.style.cssText = 'border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer; border-radius: 8px; background: #f9f9f9;';
-        uploadWrapper.innerHTML = `
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="#666" style="margin-bottom: 10px;">
-            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-          </svg>
-          <p style="margin: 0; color: #666; font-size: 14px;">Click to upload video</p>
-          <p style="margin: 5px 0 0; color: #999; font-size: 12px;">MP4, WebM, OGG (max 100MB)</p>
-        `;
-
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'video/mp4,video/webm,video/ogg';
-        fileInput.style.display = 'none';
-
-        fileInput.addEventListener('change', async (e: Event) => {
-          const target = e.target as HTMLInputElement;
-          if (target.files && target.files[0]) {
-            uploadWrapper.innerHTML = '<p style="color: #666;">Uploading video...</p>';
-            try {
-              const response = await self.uploadEditorVideo(target.files[0]);
-              if (response.success === 1 && response.file.url) {
-                this.data = { file: { url: response.file.url } };
-                this.showVideo(response.file.url);
-              }
-            } catch (error) {
-              uploadWrapper.innerHTML = '<p style="color: red;">Upload failed. Click to try again.</p>';
-            }
-          }
-        });
-
-        uploadWrapper.addEventListener('click', () => fileInput.click());
-        uploadWrapper.appendChild(fileInput);
-        this.wrapper?.appendChild(uploadWrapper);
-      }
-
-      private showVideo(url: string) {
-        if (!this.wrapper) return;
-        this.wrapper.innerHTML = '';
-        const video = document.createElement('video');
-        video.src = url;
-        video.controls = true;
-        video.style.cssText = 'max-width: 100%; border-radius: 8px;';
-        this.wrapper.appendChild(video);
-      }
-
-      save() {
-        return this.data;
-      }
-
-      validate(savedData: any) {
-        return savedData.file && savedData.file.url;
-      }
-    };
-  }
-
-  ngOnDestroy(): void {
-    this.editor?.destroy();
-  }
-
-  private uploadEditorImage(file: File): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      // Use cookies for authentication (withCredentials)
-      fetch(`${environment.apiUrl}/uploads/image`, {
-        method: 'POST',
-        credentials: 'include',  // ✅ Send HttpOnly cookies
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success === 1) {
-          // Track uploaded URL for cleanup
-          const url = data.file?.url || data.url;
-          if (url) {
-            this.uploadedFileUrls.add(url);
-          }
-          resolve(data);
-        } else {
-          reject(data.error || 'Upload failed');
-          this.notificationService.error(data.error || 'Failed to upload image');
-        }
-      })
-      .catch(error => {
-        reject(error);
-        this.notificationService.error('Failed to upload image');
-      });
-    });
-  }
-
-  private uploadEditorVideo(file: File): Promise<any> {
-    return new Promise((resolve, reject) => {
-      // Validate file type
-      const validTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-      if (!validTypes.includes(file.type)) {
-        reject('Invalid file type. Please upload MP4, WebM, or OGG');
-        this.notificationService.error('Invalid file type. Please upload MP4, WebM, or OGG');
-        return;
-      }
-
-      // Validate file size (max 100MB)
-      const maxSize = 100 * 1024 * 1024;
-      if (file.size > maxSize) {
-        reject('File size must be less than 100MB');
-        this.notificationService.error('File size must be less than 100MB');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Use cookies for authentication (withCredentials)
-      fetch(`${environment.apiUrl}/uploads/video`, {
-        method: 'POST',
-        credentials: 'include',  // ✅ Send HttpOnly cookies
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success === 1 && data.file && data.file.url) {
-          const videoUrl = data.file.url;
-          const fullUrl = videoUrl.startsWith('http') ? videoUrl : `${environment.apiUrl}${videoUrl}`;
-          // Track uploaded URL for cleanup
-          this.uploadedFileUrls.add(fullUrl);
-          resolve({
-            success: 1,
-            file: {
-              url: fullUrl
-            }
-          });
-        } else {
-          reject(data.error || 'Upload failed');
-          this.notificationService.error(data.error || 'Failed to upload video');
-        }
-      })
-      .catch(error => {
-        reject(error);
-        this.notificationService.error('Failed to upload video');
-      });
-    });
-  }
-
-  // Extract URLs from EditorJS content blocks
-  private extractBlockUrls(content: any): Set<string> {
-    const urls = new Set<string>();
-    if (content && content.blocks) {
-      for (const block of content.blocks) {
-        if (block.type === 'image' && block.data?.file?.url) {
-          urls.add(block.data.file.url);
-        } else if (block.type === 'video' && block.data?.file?.url) {
-          urls.add(block.data.file.url);
-        }
-      }
-    }
-    return urls;
-  }
-
-  // Check for removed blocks and delete their files from server
-  private cleanupRemovedBlockFiles(currentContent: any) {
-    const currentUrls = this.extractBlockUrls(currentContent);
-
-    // Find URLs that were in previous content but not in current
-    for (const url of this.previousBlockUrls) {
-      if (!currentUrls.has(url) && this.uploadedFileUrls.has(url)) {
-        this.deleteUploadedFile(url);
-        this.uploadedFileUrls.delete(url);
-      }
-    }
-
-    // Update previous URLs for next comparison
-    this.previousBlockUrls = currentUrls;
-  }
-
-  // Delete file from server
-  private deleteUploadedFile(url: string) {
-    fetch(`${environment.apiUrl}/uploads/delete`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ url })
-    })
-    .then(response => response.json())
-    .catch(error => {
-      console.error('Failed to delete file:', error);
-    });
-  }
+  protected readonly mediaType = signal('');
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-
+      this.mediaType.set(this.detectMediaType(file.name));
       // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
+      if (this.mediaType() == 'image' && file.size > 10 * 1024 * 1024) {
         this.notificationService.error('File size must be less than 10MB');
+        return;
+      } else if (this.mediaType() == 'video' && file.size > 50 * 1024 * 1024) {
+        this.notificationService.error('Video size must be less than 50MB');
         return;
       }
 
@@ -337,6 +61,7 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     }
     this.filePreviewUrl.set('');
     this.selectedFile.set(null);
+    this.mediaType.set('');
   }
 
   removeMedia() {
@@ -347,14 +72,20 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     this.mediaUrl.set('');
     this.filePreviewUrl.set('');
     this.selectedFile.set(null);
+    this.mediaType.set('');
   }
 
   createPost() {
     const title = this.title();
     const content = this.content();
 
-    if (!title.trim() || !content || !content.blocks || content.blocks.length === 0) {
-      this.notificationService.warning('Title and content are required');
+    if (!title.trim()) {
+      this.notificationService.warning('Title is required');
+      return;
+    }
+
+    if (!content.trim()) {
+      this.notificationService.warning('Content is required');
       return;
     }
 
@@ -365,13 +96,12 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     } else {
       this.createPostWithData({
         title,
-        content: JSON.stringify(content), // serialize Editor.js data
+        content, // Plain text content
         media_type: this.detectMediaType(this.mediaUrl()),
         media_url: this.mediaUrl()
       });
     }
   }
-
 
   private uploadFileAndCreatePost() {
     const file = this.selectedFile();
@@ -392,7 +122,7 @@ export class CreatePostComponent implements OnInit, OnDestroy {
 
         this.createPostWithData({
           title: this.title(),
-          content: JSON.stringify(this.content()),
+          content: this.content(),
           media_type: mediaType,
           media_url: fullUrl
         });
@@ -431,7 +161,7 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     } else if (urlLower.match(/\.(mp4|webm|ogg|mov)$/)) {
       return 'video';
     }
-    return 'image';
+    return '';
   }
 
   cancel() {

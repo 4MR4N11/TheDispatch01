@@ -1,7 +1,4 @@
-import edjsHTML from 'editorjs-html';
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -21,7 +18,6 @@ export class AdminComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
-  private readonly sanitizer = inject(DomSanitizer);
 
   protected readonly activeTab = signal<'reports' | 'users' | 'posts'>('reports');
   protected readonly reports = signal<any[]>([]);
@@ -232,62 +228,13 @@ export class AdminComponent implements OnInit {
     return `${environment.apiUrl}${avatar}`;
   }
 
-  getPostHTML(content: string): SafeHtml | null {
-    if (!content) return null;
-
-    try {
-      const contentJSON = typeof content === 'string' ? JSON.parse(content) : content;
-      const edjsParser = edjsHTML({
-        video: (block: any) => {
-          return `<video controls style="max-width: 100%; border-radius: 8px;">
-            <source src="${block.data.file.url}" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>`;
-        }
-      });
-      const html = edjsParser.parse(contentJSON);
-      return this.sanitizer.bypassSecurityTrustHtml(html);
-    } catch (err) {
-      console.error('Error parsing Editor.js content', err);
-      // Fallback: treat as plain text
-      return this.sanitizer.bypassSecurityTrustHtml(`<p>${content}</p>`);
-    }
-  }
-
   getContentPreview(content: string, maxLength: number = 200): string {
-    try {
-      // Parse Editor.js JSON
-      const contentJSON = typeof content === 'string' ? JSON.parse(content) : content;
-      const edjsParser = edjsHTML({
-        video: (block: any) => {
-          return '[Video]';
-        },
-        image: (block: any) => {
-          return '[Image]';
-        }
-      });
-      const html = edjsParser.parse(contentJSON);
-
-      // Convert to string if it's an array
-      const htmlString = Array.isArray(html) ? html.join('') : String(html);
-
-      // Strip HTML tags
-      const strippedContent = htmlString.replace(/<[^>]*>/g, '');
-      // Remove extra whitespace
-      const cleanContent = strippedContent.replace(/\s+/g, ' ').trim();
-      // Truncate to maxLength
-      if (cleanContent.length <= maxLength) {
-        return cleanContent;
-      }
-      return cleanContent.substring(0, maxLength) + '...';
-    } catch (err) {
-      console.error('Error parsing content for preview', err);
-      // Fallback: return truncated raw content
-      if (content.length <= maxLength) {
-        return content;
-      }
-      return content.substring(0, maxLength) + '...';
+    if (!content) return '';
+    // Plain text content - just truncate
+    if (content.length <= maxLength) {
+      return content;
     }
+    return content.substring(0, maxLength) + '...';
   }
 
   getExcerpt(content: string): string {

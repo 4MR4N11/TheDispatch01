@@ -1377,3 +1377,14 @@
     min-height: 50vh;
   }
 }
+
+/* Plain text content display */
+.post-text-content {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-text-primary);
+  white-space: pre-wrap; /* Preserve line breaks and spacing */
+  word-wrap: break-word;
+  margin: 1.5rem 0;
+}
