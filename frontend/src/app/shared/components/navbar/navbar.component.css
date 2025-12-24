@@ -608,6 +608,7 @@
 
 /* Mobile Menu Overlay */
 .mobile-menu-overlay {
+  display: none;
   position: fixed;
   top: 70px;
   left: 0;
@@ -887,12 +888,25 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
+  .user-dropdown {
+    display: none;
+  }
+  .mobile-menu-overlay {
+    display: block;
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
   .user-search-container {
-    width: 280px;
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
+  .mobile-menu-overlay {
+    display: block;
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
   .navbar-container {
     padding: 0 1rem;
     gap: 1rem;
@@ -1017,6 +1031,7 @@
   }
 
   .mobile-menu-overlay {
+    display: block;
     top: 60px;
     height: calc(100vh - 60px);
   }

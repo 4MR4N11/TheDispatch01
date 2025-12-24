@@ -25,6 +25,7 @@ import _blog.blog.dto.ReportResponse;
 import _blog.blog.entity.User;
 import _blog.blog.enums.ReportStatus;
 import _blog.blog.enums.ReportType;
+import _blog.blog.service.PostValidationService;
 import _blog.blog.service.ReportService;
 import _blog.blog.service.UserService;
 import jakarta.validation.Valid;
@@ -32,13 +33,15 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/reports")
 public class ReportController {
-    
+
     private final ReportService reportService;
     private final UserService userService;
-    
-    public ReportController(ReportService reportService, UserService userService) {
+    private final PostValidationService postValidationService;
+
+    public ReportController(ReportService reportService, UserService userService, PostValidationService postValidationService) {
         this.reportService = reportService;
         this.userService = userService;
+        this.postValidationService = postValidationService;
     }
 
     // User reporting functionality
@@ -65,7 +68,10 @@ public class ReportController {
             Authentication auth
     ) {
         User reporter = userService.getUserByUsername(auth.getName());
-        
+
+        // Validate that post is not hidden (cannot report hidden posts unless you're admin)
+        postValidationService.validatePostIsNotHidden(postId, reporter);
+
         try {
             reportService.reportPost(reporter.getId(), postId, request.getReason());
             return ResponseEntity.ok("Post reported successfully");

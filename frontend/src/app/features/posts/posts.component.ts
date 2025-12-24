@@ -116,6 +116,12 @@ export class PostDetailComponent {
       return;
     }
 
+    // Check if post is hidden and user doesn't have access
+    if (post.hidden && !this.canAccessHiddenPost()) {
+      this.notificationService.error('Cannot comment on a hidden post');
+      return;
+    }
+
     this.submittingComment.set(true);
     this.apiService.createComment(post.id, { content })
       .subscribe({
@@ -137,6 +143,12 @@ export class PostDetailComponent {
 
     if (!post?.id || this.togglingLike()) {
       return; // Prevent race condition by checking if already toggling
+    }
+
+    // Check if post is hidden and user doesn't have access
+    if (post.hidden && !this.canAccessHiddenPost()) {
+      this.notificationService.error('Cannot like a hidden post');
+      return;
     }
 
     this.togglingLike.set(true);
@@ -273,6 +285,21 @@ export class PostDetailComponent {
         this.post.set(p);
       });
     }
+  }
+
+  /**
+   * Checks if the current user can access a hidden post.
+   * Only admins can access hidden posts.
+   */
+  private canAccessHiddenPost(): boolean {
+    const user = this.currentUser();
+
+    if (!user) {
+      return false;
+    }
+
+    // Only admins can access hidden posts
+    return user.role === 'ADMIN';
   }
 
 

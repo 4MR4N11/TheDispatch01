@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RestController;
 
 import _blog.blog.dto.CommentResponse;
-import jakarta.validation.Valid;
 import _blog.blog.dto.PostRequest;
 import _blog.blog.dto.PostResponse;
 import _blog.blog.entity.Post;
@@ -29,7 +27,9 @@ import _blog.blog.entity.User;
 import _blog.blog.enums.Role;
 import _blog.blog.service.CommentService;
 import _blog.blog.service.PostService;
+import _blog.blog.service.PostValidationService;
 import _blog.blog.service.UserService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/posts")
@@ -38,12 +38,14 @@ public class PostController {
     private final PostService postService;
     // private final LikeService likeService;
     private final CommentService commentService;
+    private final PostValidationService postValidationService;
 
-    public PostController(UserService userService, PostService postService, CommentService commentService) {
+    public PostController(UserService userService, PostService postService, CommentService commentService, PostValidationService postValidationService) {
         this.userService = userService;
         this.postService = postService;
         // this.likeService = likeService;
         this.commentService = commentService;
+        this.postValidationService = postValidationService;
     }
 
     @GetMapping("/my-posts")
@@ -54,6 +56,9 @@ public class PostController {
         
         for (Post p : posts) {
             List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
+            if (p.isHidden() && user.getRole() != Role.ADMIN) {
+                continue;
+            }
             respPosts.add(new PostResponse(
                 p.getId(),
                 p.getAuthor().getUsername(),
@@ -84,6 +89,9 @@ public class PostController {
 
         for (Post p : posts) {
             List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
+            if (p.isHidden() && user.getRole() != Role.ADMIN) {
+                continue;
+            }
             respPosts.add(new PostResponse(
                 p.getId(),
                 p.getAuthor().getUsername(),
@@ -106,7 +114,14 @@ public class PostController {
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId) {
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId, Authentication auth) {
+        if (auth != null) {
+            User user = userService.getUserByUsername(auth.getName());
+            postValidationService.validatePostIsNotHidden(postId, user);
+        } else {
+            postValidationService.validatePostIsNotHidden(postId, null);
+        }
+
         Post post = postService.getPostByIdWithCommentsAndLikes(postId);
         List<CommentResponse> comments = commentService.getCommentsRespByPost(post.getId());
         PostResponse response = new PostResponse(
@@ -141,6 +156,9 @@ public class PostController {
     public ResponseEntity<String> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequest request, Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
         Post post = postService.getPostById(id);
+        if (post.isHidden() && user.getRole() != Role.ADMIN) {
+            return ResponseEntity.status(403).body("Cannot edit a hidden post");
+        }
 
         // Check if the user is the author of the post
         if (!post.getAuthor().getId().equals(user.getId())) {
@@ -158,6 +176,9 @@ public class PostController {
 
         for (Post p : posts) {
             List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
+            if (p.isHidden() && p.getAuthor().getRole() != Role.ADMIN) {
+                continue;
+            }
             respPosts.add(new PostResponse(
                 p.getId(),
                 p.getAuthor().getUsername(),
@@ -285,6 +306,9 @@ public class PostController {
         if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to delete this post"));
         }
+        if (post.isHidden() && user.getRole() != Role.ADMIN) {
+            return ResponseEntity.status(403).body(Map.of("message", "Cannot delete a hidden post"));
+        }
 
         if (postService.deletePost(id)) {
             return ResponseEntity.ok(Map.of("message", "Post deleted successfully!"));
@@ -313,10 +337,9 @@ public class PostController {
     @PutMapping("/unhide/{id}")
     public ResponseEntity<Map<String, String>> unhidePost(@PathVariable Long id, Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
-        Post post = postService.getPostById(id);
 
         // Check if the user is the author or an admin
-        if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+        if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to unhide this post"));
         }
 

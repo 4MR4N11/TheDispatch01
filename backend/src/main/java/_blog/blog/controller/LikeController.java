@@ -14,18 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 import _blog.blog.dto.LikeResponse;
 import _blog.blog.entity.User;
 import _blog.blog.service.LikeService;
+import _blog.blog.service.PostValidationService;
 import _blog.blog.service.UserService;
 
 @RestController
 @RequestMapping("/likes")
 public class LikeController {
-    
+
     private final LikeService likeService;
     private final UserService userService;
+    private final PostValidationService postValidationService;
 
-    public LikeController(LikeService likeService, UserService userService) {
+    public LikeController(LikeService likeService, UserService userService, PostValidationService postValidationService) {
         this.likeService = likeService;
         this.userService = userService;
+        this.postValidationService = postValidationService;
     }
 
     @PostMapping("/post/{postId}")
@@ -34,11 +37,14 @@ public class LikeController {
             Authentication auth
     ) {
         User user = userService.getUserByUsername(auth.getName());
-        
+
+        // Validate that post is not hidden (or user has access - admin can like all posts)
+        postValidationService.validatePostIsNotHidden(postId, user);
+
         if (likeService.isPostLikedByUser(postId, user.getId())) {
             return ResponseEntity.badRequest().body("Post already liked");
         }
-        
+
         likeService.likePost(postId, user.getId());
         return ResponseEntity.ok("Post liked successfully");
     }
@@ -49,11 +55,14 @@ public class LikeController {
             Authentication auth
     ) {
         User user = userService.getUserByUsername(auth.getName());
-        
+
+        // Validate that post is not hidden (or user has access - admin can unlike all posts)
+        postValidationService.validatePostIsNotHidden(postId, user);
+
         if (!likeService.isPostLikedByUser(postId, user.getId())) {
             return ResponseEntity.badRequest().body("Post not liked yet");
         }
-        
+
         likeService.unlikePost(postId, user.getId());
         return ResponseEntity.ok("Post unliked successfully");
     }
@@ -78,6 +87,10 @@ public class LikeController {
             Authentication auth
     ) {
         User user = userService.getUserByUsername(auth.getName());
+
+        // Validate that post is not hidden (or user has access - admin can check all posts)
+        postValidationService.validatePostIsNotHidden(postId, user);
+
         boolean isLiked = likeService.isPostLikedByUser(postId, user.getId());
         return ResponseEntity.ok(isLiked);
     }

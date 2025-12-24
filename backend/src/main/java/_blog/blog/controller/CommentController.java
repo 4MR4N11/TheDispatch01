@@ -24,6 +24,7 @@ import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
 import _blog.blog.service.CommentService;
 import _blog.blog.service.PostService;
+import _blog.blog.service.PostValidationService;
 import _blog.blog.service.UserService;
 import jakarta.validation.Valid;
 
@@ -34,11 +35,13 @@ public class CommentController {
     private final CommentService commentService;
     private final UserService userService;
     private final PostService postService;
+    private final PostValidationService postValidationService;
 
-    public CommentController(CommentService commentService, UserService userService, PostService postService) {
+    public CommentController(CommentService commentService, UserService userService, PostService postService, PostValidationService postValidationService) {
         this.commentService = commentService;
         this.userService = userService;
         this.postService = postService;
+        this.postValidationService = postValidationService;
     }
 
     // ✅ Create Comment
@@ -49,6 +52,10 @@ public class CommentController {
             Authentication auth
     ) {
         User user = userService.getUserByUsername(auth.getName());
+
+        // Validate that post is not hidden (or user has access - admin can comment on all posts)
+        postValidationService.validatePostIsNotHidden(postId, user);
+
         Post post = postService.getPostById(postId);
 
         Comment comment = Comment.builder()
@@ -111,6 +118,11 @@ public class CommentController {
         User user = userService.getUserByUsername(auth.getName());
         Comment existingComment = commentService.getCommentById(commentId);
 
+        // Validate that parent post is not hidden (or user has access - admin can edit comments on all posts)
+        if (existingComment.getPost() != null) {
+            postValidationService.validatePostIsNotHidden(existingComment.getPost().getId(), user);
+        }
+
         // Author check
         if (!existingComment.getAuthor().getId().equals(user.getId())) {
             return ResponseEntity.status(403).body("You can only edit your own comments");
@@ -136,6 +148,11 @@ public class CommentController {
     ) {
         User user = userService.getUserByUsername(auth.getName());
         Comment comment = commentService.getCommentById(commentId);
+
+        // Validate that parent post is not hidden (or user has access - admin can delete comments on all posts)
+        if (comment.getPost() != null) {
+            postValidationService.validatePostIsNotHidden(comment.getPost().getId(), user);
+        }
 
         if (!comment.getAuthor().getId().equals(user.getId())
                 && !user.getRole().name().equals("ADMIN")) {

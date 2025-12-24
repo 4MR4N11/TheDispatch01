@@ -28,7 +28,6 @@ export class MyBlogComponent implements OnInit {
   protected readonly posts = signal<PostResponse[]>([]);
   protected readonly loading = signal(true);
   protected readonly deleting = signal<number | null>(null);
-  protected readonly hiding = signal<number | null>(null);
   protected readonly showNewPostModal = signal(false);
   protected readonly showEditPostModal = signal(false);
   protected readonly selectedPost = signal<PostResponse | null>(null);
@@ -49,7 +48,6 @@ export class MyBlogComponent implements OnInit {
     }
 
     this.loading.set(true);
-    // Use getMyPosts() instead of getPostsByUsername() to include hidden posts
     this.apiService.getMyPosts().subscribe({
       next: (posts) => {
         this.posts.set(posts);
@@ -165,27 +163,6 @@ export class MyBlogComponent implements OnInit {
         },
       });
     }
-  }
-
-  toggleHidePost(post: PostResponse, event: Event) {
-    event.stopPropagation();
-    if (!post.id) return;
-
-    this.hiding.set(post.id);
-    const action = post.hidden ? this.apiService.unhidePost(post.id) : this.apiService.hidePost(post.id);
-    const message = post.hidden ? 'Post is now visible' : 'Post is now hidden';
-
-    action.subscribe({
-      next: () => {
-        this.notificationService.success(message);
-        this.hiding.set(null);
-        this.loadMyPosts();
-      },
-      error: () => {
-        this.notificationService.error('Failed to update post visibility');
-        this.hiding.set(null);
-      },
-    });
   }
 
   createNewPost() {
