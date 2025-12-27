@@ -9,8 +9,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,19 +26,14 @@ import _blog.blog.utils.FileValidator;
 @RequestMapping("/uploads")
 public class UploadController {
 
-    // ✅ CODE QUALITY FIX: Using SLF4J logger instead of System.out.println
-    private static final Logger log = LoggerFactory.getLogger(UploadController.class);
-
     @Value("${upload.path:uploads}")
     private String uploadPath;
 
-    // Generic upload endpoint (supports any file type)
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> uploadFile(@RequestParam("file") MultipartFile file) {
         return handleFileUpload(file, "file");
     }
 
-    // Image upload endpoint (EditorJS and frontend expect this)
     @PostMapping("/image")
     public ResponseEntity<Map<String, Object>> uploadImage(@RequestParam(value = "image", required = false) MultipartFile imageParam,
                                                             @RequestParam(value = "file", required = false) MultipartFile fileParam) {
@@ -57,37 +50,15 @@ public class UploadController {
         return handleFileUpload(file, "image");
     }
 
-    // Avatar upload endpoint
-    @PostMapping("/avatar")
-    public ResponseEntity<Map<String, Object>> uploadAvatar(@RequestParam(value = "avatar", required = false) MultipartFile avatarParam,
-                                                              @RequestParam(value = "file", required = false) MultipartFile fileParam) {
-        MultipartFile file = avatarParam != null ? avatarParam : fileParam;
-
-        if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Avatar file is required"));
-        }
-
-        if (!FileValidator.isValidImage(file)) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Invalid image type"));
-        }
-
-        if (file.getSize() > FileValidator.MAX_AVATAR_SIZE) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Avatar too large (max 5MB)"));
-        }
-
-        return handleFileUpload(file, "avatar");
-    }
-
     // Helper method to handle file uploads
     private ResponseEntity<Map<String, Object>> handleFileUpload(MultipartFile file, String type) {
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("success", 0, "error", "File is required"));
         }
 
-        // Validate file size based on type
-        long maxSize = type.equals("avatar") ? FileValidator.MAX_AVATAR_SIZE : 10 * 1024 * 1024;
-        if (file.getSize() > maxSize) {
-            return ResponseEntity.badRequest().body(Map.of("success", 0, "error", "File too large"));
+        // Validate file size (max 50MB for videos, 10MB for images)
+        if (file.getSize() > 50 * 1024 * 1024) {
+            return ResponseEntity.badRequest().body(Map.of("success", 0, "error", "File too large (max 50MB)"));
         }
 
         try {
@@ -95,28 +66,17 @@ public class UploadController {
             Files.createDirectories(uploadDir);
 
             String ext = FileValidator.getExtension(file.getOriginalFilename());
-            String prefix = type.equals("avatar") ? "avatar_" : "";
-            String filename = prefix + UUID.randomUUID() + "." + ext;
+            String filename = UUID.randomUUID() + "." + ext;
             Path filePath = uploadDir.resolve(filename).normalize();
-
-            // ✅ CODE QUALITY FIX: Using logger instead of System.out.println
-            log.debug("Generated filename: {}", filename);
-            log.debug("Full path: {}", filePath);
 
             try (InputStream in = file.getInputStream()) {
                 Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            log.info("File saved successfully: {}", filename);
-
-            // Return full URL with backend host for frontend to access
             String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/uploads/")
                     .path(filename)
                     .toUriString();
-
-            log.debug("Returning URL: {}", fileUrl);
-
             return ResponseEntity.ok(Map.of(
                 "success", 1,
                 "file", Map.of("url", fileUrl),
@@ -209,14 +169,11 @@ public class UploadController {
 
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
-                log.info("File deleted successfully: {}", filename);
                 return ResponseEntity.ok(Map.of("success", true, "message", "File deleted successfully"));
             } else {
-                log.warn("File not found for deletion: {}", filename);
                 return ResponseEntity.ok(Map.of("success", true, "message", "File already deleted or not found"));
             }
         } catch (IOException e) {
-            log.error("Failed to delete file: {}", e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "error", "Failed to delete file: " + e.getMessage()

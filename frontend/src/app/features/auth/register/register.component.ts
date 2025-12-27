@@ -21,10 +21,8 @@ export class RegisterComponent {
   protected readonly username = signal('');
   protected readonly email = signal('');
   protected readonly password = signal('');
-  protected readonly avatar = signal('');
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly selectedFile = signal<File | null>(null);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
@@ -32,7 +30,7 @@ export class RegisterComponent {
   register() {
     // Basic validation
     if (!this.firstname() || !this.lastname() || !this.username() || !this.email() || !this.password()) {
-      this.errorMessage.set('All fields except avatar are required');
+      this.errorMessage.set('All fields are required');
       return;
     }
 
@@ -57,8 +55,7 @@ export class RegisterComponent {
       lastname: this.lastname(),
       username: this.username(),
       email: this.email(),
-      password: this.password(),
-      avatar: this.avatar()
+      password: this.password()
     }).subscribe({
       next: () => {
         this.loading.set(false);

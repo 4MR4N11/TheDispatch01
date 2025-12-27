@@ -1,6 +1,5 @@
 package _blog.blog.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,13 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import _blog.blog.dto.CommentResponse;
 import _blog.blog.dto.PostRequest;
 import _blog.blog.dto.PostResponse;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
 import _blog.blog.enums.Role;
-import _blog.blog.service.CommentService;
+import _blog.blog.mapper.PostResponseMapper;
 import _blog.blog.service.PostService;
 import _blog.blog.service.PostValidationService;
 import _blog.blog.service.UserService;
@@ -36,47 +34,27 @@ import jakarta.validation.Valid;
 public class PostController {
     private final UserService userService;
     private final PostService postService;
-    // private final LikeService likeService;
-    private final CommentService commentService;
     private final PostValidationService postValidationService;
+    private final PostResponseMapper postResponseMapper;
 
-    public PostController(UserService userService, PostService postService, CommentService commentService, PostValidationService postValidationService) {
+    public PostController(UserService userService, PostService postService, PostValidationService postValidationService, PostResponseMapper postResponseMapper) {
         this.userService = userService;
         this.postService = postService;
-        // this.likeService = likeService;
-        this.commentService = commentService;
         this.postValidationService = postValidationService;
+        this.postResponseMapper = postResponseMapper;
     }
 
     @GetMapping("/my-posts")
     public ResponseEntity<List<PostResponse>> getMyPosts(Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
         List<Post> posts = postService.getPostsByIdWithCommentsAndLikes(user.getId());
-        List<PostResponse> respPosts = new ArrayList<>();
-        
-        for (Post p : posts) {
-            List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-            if (p.isHidden() && user.getRole() != Role.ADMIN) {
-                continue;
-            }
-            respPosts.add(new PostResponse(
-                p.getId(),
-                p.getAuthor().getUsername(),
-                p.getAuthor().getAvatar(),
-                p.getTitle(),
-                p.getContent(),
-                p.getMediaType(),
-                p.getMediaUrl(),
-                p.isHidden(),
-                comments,
-                p.getCreatedAt(),
-                p.getUpdatedAt(),
-                p.getLikedBy().size(), // Add like count
-                p.getLikedBy().stream()
-                    .map(User::getUsername)
-                    .toList() // Add list of users who liked
-            ));
-        }
+
+        // Filter out hidden posts for non-admins
+        List<Post> filteredPosts = posts.stream()
+                .filter(p -> !p.isHidden() || user.getRole() == Role.ADMIN)
+                .toList();
+
+        List<PostResponse> respPosts = postResponseMapper.toResponseList(filteredPosts);
         return ResponseEntity.ok(respPosts);
     }
 
@@ -85,31 +63,13 @@ public class PostController {
         User user = userService.getUserByUsername(username);
         // Use getVisiblePostsByIdWithCommentsAndLikes to filter out hidden posts for public view
         List<Post> posts = postService.getVisiblePostsByIdWithCommentsAndLikes(user.getId());
-        List<PostResponse> respPosts = new ArrayList<>();
 
-        for (Post p : posts) {
-            List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-            if (p.isHidden() && user.getRole() != Role.ADMIN) {
-                continue;
-            }
-            respPosts.add(new PostResponse(
-                p.getId(),
-                p.getAuthor().getUsername(),
-                p.getAuthor().getAvatar(),
-                p.getTitle(),
-                p.getContent(),
-                p.getMediaType(),
-                p.getMediaUrl(),
-                p.isHidden(),
-                comments,
-                p.getCreatedAt(),
-                p.getUpdatedAt(),
-                p.getLikedBy().size(), // Add like count
-                p.getLikedBy().stream()
-                    .map(User::getUsername)
-                    .toList() // Add list of users who liked
-            ));
-        }
+        // Filter out hidden posts for non-admins (double-check even though service should handle this)
+        List<Post> filteredPosts = posts.stream()
+                .filter(p -> !p.isHidden() || user.getRole() == Role.ADMIN)
+                .toList();
+
+        List<PostResponse> respPosts = postResponseMapper.toResponseList(filteredPosts);
         return ResponseEntity.ok(respPosts);
     }
 
@@ -123,25 +83,8 @@ public class PostController {
         }
 
         Post post = postService.getPostByIdWithCommentsAndLikes(postId);
-        List<CommentResponse> comments = commentService.getCommentsRespByPost(post.getId());
-        PostResponse response = new PostResponse(
-            post.getId(),
-            post.getAuthor().getUsername(),
-            post.getAuthor().getAvatar(),
-            post.getTitle(),
-            post.getContent(),
-            post.getMediaType(),
-            post.getMediaUrl(),
-            post.isHidden(),
-            comments,
-            post.getCreatedAt(),
-            post.getUpdatedAt(),
-            post.getLikedBy().size(),
-            post.getLikedBy().stream()
-                .map(User::getUsername)
-                .toList()
-        );
-        
+        PostResponse response = postResponseMapper.toResponse(post);
+
         return ResponseEntity.ok(response);
     }
 
@@ -173,31 +116,13 @@ public class PostController {
     @GetMapping("/all")
     public ResponseEntity<List<PostResponse>> getAllPosts() {
         List<Post> posts = postService.getAllPostsWithCommentsAndLikes();
-        List<PostResponse> respPosts = new ArrayList<>();
 
-        for (Post p : posts) {
-            List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-            if (p.isHidden() && p.getAuthor().getRole() != Role.ADMIN) {
-                continue;
-            }
-            respPosts.add(new PostResponse(
-                p.getId(),
-                p.getAuthor().getUsername(),
-                p.getAuthor().getAvatar(),
-                p.getTitle(),
-                p.getContent(),
-                p.getMediaType(),
-                p.getMediaUrl(),
-                p.isHidden(),
-                comments,
-                p.getCreatedAt(),
-                p.getUpdatedAt(),
-                p.getLikedBy().size(),
-                p.getLikedBy().stream()
-                    .map(User::getUsername)
-                    .toList()
-            ));
-        }
+        // Filter out hidden posts for non-admins
+        List<Post> filteredPosts = posts.stream()
+                .filter(p -> !p.isHidden() || p.getAuthor().getRole() == Role.ADMIN)
+                .toList();
+
+        List<PostResponse> respPosts = postResponseMapper.toResponseList(filteredPosts);
         return ResponseEntity.ok(respPosts);
     }
 
@@ -205,59 +130,9 @@ public class PostController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PostResponse>> getAllPostsForAdmin() {
         List<Post> posts = postService.getAllPostsIncludingHidden();
-        List<PostResponse> respPosts = new ArrayList<>();
-
-        for (Post p : posts) {
-            List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-            respPosts.add(new PostResponse(
-                p.getId(),
-                p.getAuthor().getUsername(),
-                p.getAuthor().getAvatar(),
-                p.getTitle(),
-                p.getContent(),
-                p.getMediaType(),
-                p.getMediaUrl(),
-                p.isHidden(),
-                comments,
-                p.getCreatedAt(),
-                p.getUpdatedAt(),
-                p.getLikedBy().size(),
-                p.getLikedBy().stream()
-                    .map(User::getUsername)
-                    .toList()
-            ));
-        }
+        List<PostResponse> respPosts = postResponseMapper.toResponseList(posts);
         return ResponseEntity.ok(respPosts);
     }
-
-    // @GetMapping("/feed")
-    // public ResponseEntity<List<PostResponse>> getFeed(Authentication auth) {
-    //     User user = userService.getUserByUsername(auth.getName());
-    //     List<Post> posts = postService.getFeedPosts(user.getId());
-    //     List<PostResponse> respPosts = new ArrayList<>();
-        
-    //     for (Post p : posts) {
-    //         List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-    //         respPosts.add(new PostResponse(
-    //             p.getId(),
-    //             p.getAuthor().getUsername(),
-    //             p.getAuthor().getAvatar(),
-    //             p.getTitle(),
-    //             p.getContent(),
-    //             p.getMediaType(),
-    //             p.getMediaUrl(),
-    //             p.isHidden(),
-    //             comments,
-    //             p.getCreatedAt(),
-    //             p.getUpdatedAt(),
-    //             p.getLikedBy().size(),
-    //             p.getLikedBy().stream()
-    //                 .map(User::getUsername)
-    //                 .toList()
-    //         ));
-    //     }
-    //     return ResponseEntity.ok(respPosts);
-    // }
 
     @GetMapping("/feed")
     public ResponseEntity<Map<String, Object>> getFeed(
@@ -268,24 +143,7 @@ public class PostController {
         User user = userService.getUserByUsername(auth.getName());
         Page<Post> postsPage = postService.getFeedPosts(user.getId(), page, size);
 
-        List<PostResponse> respPosts = postsPage.getContent().stream().map(p -> {
-            List<CommentResponse> comments = commentService.getCommentsRespByPost(p.getId());
-            return new PostResponse(
-                p.getId(),
-                p.getAuthor().getUsername(),
-                p.getAuthor().getAvatar(),
-                p.getTitle(),
-                p.getContent(),
-                p.getMediaType(),
-                p.getMediaUrl(),
-                p.isHidden(),
-                comments,
-                p.getCreatedAt(),
-                p.getUpdatedAt(),
-                p.getLikedBy().size(),
-                p.getLikedBy().stream().map(User::getUsername).toList()
-            );
-        }).toList();
+        List<PostResponse> respPosts = postResponseMapper.toResponseList(postsPage.getContent());
 
         Map<String, Object> response = new HashMap<>();
         response.put("posts", respPosts);
@@ -303,7 +161,6 @@ public class PostController {
         User user = userService.getUserByUsername(auth.getName());
         Post post = postService.getPostById(id);
 
-        // Check if the user is the author or an admin
         if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to delete this post"));
         }
@@ -323,7 +180,6 @@ public class PostController {
         User user = userService.getUserByUsername(auth.getName());
         Post post = postService.getPostById(id);
 
-        // Check if the user is the author or an admin
         if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to hide this post"));
         }
@@ -339,7 +195,6 @@ public class PostController {
     public ResponseEntity<Map<String, String>> unhidePost(@PathVariable Long id, Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
 
-        // Check if the user is the author or an admin
         if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to unhide this post"));
         }

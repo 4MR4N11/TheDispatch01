@@ -401,15 +401,6 @@
   box-shadow: 0 0 0 1px var(--color-text-primary);
 }
 
-.user-avatar-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 0;
-  object-fit: cover;
-  border: 2px solid var(--color-bg-primary);
-  box-shadow: 0 0 0 1px var(--color-text-primary);
-}
-
 .user-details {
   display: flex;
   flex-direction: column;

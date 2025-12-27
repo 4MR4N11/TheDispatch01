@@ -48,17 +48,9 @@
           <article class="post-card" (click)="viewPost(post.id)">
             <div class="post-header">
               <div class="post-author-section">
-                @if (post.authorAvatar && !isAvatarFailed(post.authorAvatar)) {
-                  <img
-                    [src]="getFullAvatarUrl(post.authorAvatar)"
-                    alt="{{ post.author }}"
-                    class="author-avatar-img"
-                    (error)="onAvatarError(post.authorAvatar)">
-                } @else {
-                  <div class="author-avatar">
-                    {{ getAuthorInitial(post.author) }}
-                  </div>
-                }
+                <div class="author-avatar">
+                  {{ getAuthorInitial(post.author) }}
+                </div>
                 <div class="author-info">
                   <div class="author-name">{{ post.author }}</div>
                   <div class="author-handle">&#64;{{ post.author }} · {{ getTimeAgo(post.created_at) }}</div>

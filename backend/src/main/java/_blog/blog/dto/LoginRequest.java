@@ -13,12 +13,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LoginRequest {
     
-    @JsonProperty("usernameOrEmail") // Primary field name
+    @JsonProperty("usernameOrEmail")
     private String usernameOrEmail;
     
     private String password;
     
-    // Alternative setter to handle "username" field name as well
     @JsonProperty("username")
     public void setUsername(String username) {
         this.usernameOrEmail = username;
@@ -28,7 +27,6 @@ public class LoginRequest {
         return this.usernameOrEmail;
     }
     
-    // Alternative setter to handle "email" field name as well
     @JsonProperty("email") 
     public void setEmail(String email) {
         this.usernameOrEmail = email;

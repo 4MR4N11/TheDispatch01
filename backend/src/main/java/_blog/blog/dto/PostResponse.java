@@ -15,7 +15,6 @@ import lombok.Setter;
 public class PostResponse {
     private Long id;
     private String author;
-    private String authorAvatar;
     private String title;
     private String content;
     private String media_type;
@@ -28,11 +27,10 @@ public class PostResponse {
     private List<String> likedByUsernames;
 
     // Constructor without like information for backward compatibility
-    public PostResponse(Long id, String author, String authorAvatar, String title, String content, String media_type,
+    public PostResponse(Long id, String author, String title, String content, String media_type,
                        String media_url, List<CommentResponse> comments, Date created_at, Date updated_at) {
         this.id = id;
         this.author = author;
-        this.authorAvatar = authorAvatar;
         this.title = title;
         this.content = content;
         this.media_type = media_type;

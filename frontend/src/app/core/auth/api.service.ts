@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PostResponse, PostRequest, CommentResponse, CommentRequest, LikeResponse, UserResponse, ReportRequest, ReportResponse, AdminReportActionRequest, NotificationResponse, SearchResponse } from '../../shared/models/models';
+import { PostResponse, PostRequest, CommentResponse, CommentRequest, LikeResponse, UserResponse, ReportRequest, ReportResponse, AdminReportStatusRequest, NotificationResponse, SearchResponse } from '../../shared/models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -187,17 +187,13 @@ export class ApiService {
     return this.http.get<any>(`${this.baseUrl}/reports/admin/all?page=${page}&size=${size}`);
   }
 
-  handleReport(reportId: number, request: AdminReportActionRequest): Observable<string> {
+  handleReport(reportId: number, request: AdminReportStatusRequest): Observable<string> {
     return this.http.put(`${this.baseUrl}/reports/admin/handle/${reportId}`, request, { responseType: 'text' });
   }
 
   // Media upload
   uploadMedia(formData: FormData): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/media/upload`, formData);
-  }
-
-  uploadAvatar(formData: FormData): Observable<{ url: string; filename: string }> {
-    return this.http.post<{ url: string; filename: string }>(`${this.baseUrl}/media/upload-avatar`, formData);
+    return this.http.post<any>(`${this.baseUrl}/uploads/upload`, formData);
   }
 
   // Notifications

@@ -48,7 +48,7 @@
               <img [src]="mediaUrl()" alt="Current media" class="preview-image" />
             }
             @if (mediaType() === 'video') {
-              <video [src]="mediaUrl()" class="preview-image" controls></video>
+              <video [src]="mediaUrl()" class="preview-video" controls></video>
             }
             <button type="button" class="btn-remove-preview" (click)="removeMedia()" [disabled]="updating()">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -61,11 +61,10 @@
         <!-- New File Preview -->
         @if (selectedFile() && filePreviewUrl()) {
           <div class="media-preview">
-            @if (mediaType() === 'image') {
+            @if (isVideoFile()) {
+              <video [src]="filePreviewUrl()" class="preview-video" controls></video>
+            } @else {
               <img [src]="filePreviewUrl()" alt="New preview" class="preview-image" />
-            }
-            @if (mediaType() === 'video') {
-              <video [src]="filePreviewUrl()" class="preview-image" controls></video>
             }
             <button type="button" class="btn-remove-preview" (click)="clearFile()" [disabled]="updating()">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

@@ -38,7 +38,6 @@ public class LikeController {
     ) {
         User user = userService.getUserByUsername(auth.getName());
 
-        // Validate that post is not hidden (or user has access - admin can like all posts)
         postValidationService.validatePostIsNotHidden(postId, user);
 
         if (likeService.isPostLikedByUser(postId, user.getId())) {
@@ -56,7 +55,6 @@ public class LikeController {
     ) {
         User user = userService.getUserByUsername(auth.getName());
 
-        // Validate that post is not hidden (or user has access - admin can unlike all posts)
         postValidationService.validatePostIsNotHidden(postId, user);
 
         if (!likeService.isPostLikedByUser(postId, user.getId())) {
@@ -88,7 +86,6 @@ public class LikeController {
     ) {
         User user = userService.getUserByUsername(auth.getName());
 
-        // Validate that post is not hidden (or user has access - admin can check all posts)
         postValidationService.validatePostIsNotHidden(postId, user);
 
         boolean isLiked = likeService.isPostLikedByUser(postId, user.getId());

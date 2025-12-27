@@ -11,11 +11,10 @@ public class UserMapper {
     public static User toEntity(RegisterRequest request, PasswordEncoder passwordEncoder) {
         return User.builder()
                 .firstName(request.getFirstName())
-                .lastName(request.getLastName()) 
+                .lastName(request.getLastName())
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .avatar(request.getAvatar())
                 .role(Role.USER)
                 .build();
     }

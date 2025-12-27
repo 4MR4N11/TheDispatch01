@@ -44,7 +44,6 @@ public class CommentController {
         this.postValidationService = postValidationService;
     }
 
-    // ✅ Create Comment
     @PostMapping("/create/{postId}")
     public ResponseEntity<String> createComment(
             @PathVariable Long postId,
@@ -53,7 +52,6 @@ public class CommentController {
     ) {
         User user = userService.getUserByUsername(auth.getName());
 
-        // Validate that post is not hidden (or user has access - admin can comment on all posts)
         postValidationService.validatePostIsNotHidden(postId, user);
 
         Post post = postService.getPostById(postId);
@@ -68,7 +66,6 @@ public class CommentController {
         return ResponseEntity.ok("Comment created successfully");
     }
 
-    // ✅ Get Comments By Post (with updatedAt)
     @GetMapping("/post/{postId}")
     public List<CommentResponse> getCommentsByPost(@PathVariable Long postId) {
         List<Comment> comments = commentService.getCommentsByPostId(postId);
@@ -78,7 +75,6 @@ public class CommentController {
             commentResponses.add(new CommentResponse(
                     comment.getId(),
                     comment.getAuthor().getUsername(),
-                    comment.getAuthor().getAvatar(),
                     comment.getContent(),
                     comment.getCreatedAt(),
                     comment.getUpdatedAt()
@@ -88,7 +84,6 @@ public class CommentController {
         return commentResponses;
     }
 
-    // ✅ Get All Comments (with updatedAt)
     @GetMapping
     public ResponseEntity<List<CommentResponse>> getAllComments() {
         List<Comment> comments = commentService.fetchComments();
@@ -98,7 +93,6 @@ public class CommentController {
             commentResponses.add(new CommentResponse(
                     comment.getId(),
                     comment.getAuthor().getUsername(),
-                    comment.getAuthor().getAvatar(),
                     comment.getContent(),
                     comment.getCreatedAt(),
                     comment.getUpdatedAt()
@@ -108,7 +102,6 @@ public class CommentController {
         return ResponseEntity.ok(commentResponses);
     }
 
-    // ✅ Update Comment (keeps createdAt, updates updatedAt)
     @PutMapping("/{commentId}")
     public ResponseEntity<String> updateComment(
             @PathVariable Long commentId,
@@ -118,17 +111,14 @@ public class CommentController {
         User user = userService.getUserByUsername(auth.getName());
         Comment existingComment = commentService.getCommentById(commentId);
 
-        // Validate that parent post is not hidden (or user has access - admin can edit comments on all posts)
         if (existingComment.getPost() != null) {
             postValidationService.validatePostIsNotHidden(existingComment.getPost().getId(), user);
         }
 
-        // Author check
         if (!existingComment.getAuthor().getId().equals(user.getId())) {
             return ResponseEntity.status(403).body("You can only edit your own comments");
         }
 
-        // Update fields
         existingComment.setContent(request.getContent());
         existingComment.setUpdatedAt(fromLocalDateTime(LocalDateTime.now()));
 
@@ -140,7 +130,6 @@ public class CommentController {
         return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    // ✅ Delete Comment
     @DeleteMapping("/{commentId}")
     public ResponseEntity<String> deleteComment(
             @PathVariable Long commentId,
@@ -149,7 +138,6 @@ public class CommentController {
         User user = userService.getUserByUsername(auth.getName());
         Comment comment = commentService.getCommentById(commentId);
 
-        // Validate that parent post is not hidden (or user has access - admin can delete comments on all posts)
         if (comment.getPost() != null) {
             postValidationService.validatePostIsNotHidden(comment.getPost().getId(), user);
         }

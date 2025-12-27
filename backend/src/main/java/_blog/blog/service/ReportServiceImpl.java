@@ -1,6 +1,5 @@
 package _blog.blog.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,19 +8,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import _blog.blog.dto.AdminReportActionRequest;
 import _blog.blog.dto.AdminReportStatusRequest;
-import _blog.blog.dto.PostReportResponse;
 import _blog.blog.dto.ReportResponse;
 import _blog.blog.entity.Post;
-import _blog.blog.entity.PostReport;
 import _blog.blog.entity.Report;
 import _blog.blog.entity.User;
 import _blog.blog.enums.ReportStatus;
 import _blog.blog.enums.ReportType;
 import _blog.blog.exception.BadRequestException;
 import _blog.blog.exception.ResourceNotFoundException;
-import _blog.blog.repository.PostReportRepository;
 import _blog.blog.repository.PostRepository;
 import _blog.blog.repository.ReportRepository;
 import _blog.blog.repository.UserRepository;
@@ -29,20 +24,15 @@ import _blog.blog.repository.UserRepository;
 @Service
 @Transactional
 public class ReportServiceImpl implements ReportService {
-    
+
     private final ReportRepository reportRepository;
-    private final PostReportRepository postReportRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
-    // private final UserService userService;
-    // private final PostService postService;
-    
-    public ReportServiceImpl(ReportRepository reportRepository, 
-                           PostReportRepository postReportRepository,
+
+    public ReportServiceImpl(ReportRepository reportRepository,
                            UserRepository userRepository,
                            PostRepository postRepository) {
         this.reportRepository = reportRepository;
-        this.postReportRepository = postReportRepository;
         this.userRepository = userRepository;
         this.postRepository = postRepository;
     }
@@ -100,31 +90,6 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public PostReport createPostReport(Long reporterId, Long reportedPostId, String reason) {
-        User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
-        Post reportedPost = postRepository.findById(reportedPostId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post", reportedPostId));
-
-        if (reportedPost.getAuthor().getId().equals(reporterId)) {
-            throw new BadRequestException("You cannot report your own post");
-        }
-
-        if (postReportRepository.existsByReporterAndReportedPost(reporter, reportedPost)) {
-            throw new BadRequestException("You have already reported this post");
-        }
-
-        PostReport postReport = PostReport.builder()
-                .reporter(reporter)
-                .reportedPost(reportedPost)
-                .reason(reason)
-                .status(ReportStatus.PENDING)
-                .build();
-
-        return postReportRepository.save(postReport);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<ReportResponse> getUserReports(Long userId) {
         User user = userRepository.findById(userId)
@@ -158,25 +123,11 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<PostReportResponse> getAllPostReports(Pageable pageable) {
-        Page<PostReport> postReports = postReportRepository.findAllOrderByCreatedAtDesc(pageable);
-        return postReports.map(this::mapToPostReportResponse);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<PostReportResponse> getPostReportsByStatus(ReportStatus status, Pageable pageable) {
-        Page<PostReport> postReports = postReportRepository.findByStatus(status, pageable);
-        return postReports.map(this::mapToPostReportResponse);
-    }
-
-    @Override
     @Transactional
     public Report handleStatusReport(Long reportId, Long adminId, AdminReportStatusRequest request) {
         int updated = reportRepository.updateStatus(
                 reportId,
-                request.getAction(),      // your enum value
+                request.getAction(),
                 adminId,
                 request.getAdminResponse()
         );
@@ -185,83 +136,7 @@ public class ReportServiceImpl implements ReportService {
             throw new ResourceNotFoundException("Report", reportId);
         }
 
-        // Return fresh entity (optional)
         return reportRepository.findById(reportId).orElseThrow();
-    }
-
-
-    @Override
-    public Report handleReport(Long reportId, Long adminId, AdminReportActionRequest request) {
-        Report report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new ResourceNotFoundException("Report", reportId));
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", adminId));
-
-        // Execute the requested action
-        switch (request.getAction()) {
-            case DISMISS:
-                report.setStatus(ReportStatus.REJECTED);
-                break;
-            case DELETE_POST:
-                if (report.getReportedPost() != null) {
-                    // TODO: Implement post deletion
-                    report.setStatus(ReportStatus.APPROVED);
-                } else {
-                    throw new BadRequestException("Cannot delete post: This is not a post report");
-                }
-                break;
-            case BAN_USER:
-                if (report.getReportedUser() != null) {
-                    // TODO: Implement user banning
-                    report.setStatus(ReportStatus.APPROVED);
-                } else if (report.getReportedPost() != null) {
-                    // Ban the post author
-                    // TODO: Implement user banning
-                    report.setStatus(ReportStatus.APPROVED);
-                }
-                break;
-            default:
-                break;
-        }
-
-        report.setHandledByAdmin(admin);
-        report.setAdminResponse(request.getAdminResponse());
-        report.setHandledAt(new Date());
-
-        return reportRepository.save(report);
-    }
-
-    @Override
-    public PostReport handlePostReport(Long postReportId, Long adminId, AdminReportActionRequest request) {
-        PostReport postReport = postReportRepository.findById(postReportId)
-                .orElseThrow(() -> new ResourceNotFoundException("PostReport", postReportId));
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", adminId));
-        
-        // Execute the requested action
-        switch (request.getAction()) {
-            case DISMISS:
-                postReport.setStatus(ReportStatus.REJECTED);
-                break;
-            case WARN_USER:
-                postReport.setStatus(ReportStatus.APPROVED);
-                // TODO: Implement warning system
-                break;
-            case DELETE_POST:
-                // TODO: Implement post deletion
-                postReport.setStatus(ReportStatus.APPROVED);
-                break;
-            case BAN_USER:
-                // TODO: Implement user banning
-                postReport.setStatus(ReportStatus.APPROVED);
-                break;
-        }
-        
-        postReport.setHandledByAdmin(admin);
-        postReport.setAdminResponse(request.getAdminResponse());
-        postReport.setHandledAt(new Date());
-        
-        return postReportRepository.save(postReport);
     }
 
     @Override
@@ -274,18 +149,6 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public long getTotalReportsCount() {
         return reportRepository.count();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public long getPendingPostReportsCount() {
-        return postReportRepository.countByStatus(ReportStatus.PENDING);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public long getTotalPostReportsCount() {
-        return postReportRepository.count();
     }
 
     @Override
@@ -305,9 +168,7 @@ public class ReportServiceImpl implements ReportService {
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", reporterId));
 
-        return reportRepository.existsByReporterAndReportedPostId(reporter, postId) ||
-               postReportRepository.existsByReporterAndReportedPost(reporter,
-                   postRepository.findById(postId).orElseThrow(() -> new ResourceNotFoundException("Post", postId)));
+        return reportRepository.existsByReporterAndReportedPostId(reporter, postId);
     }
 
     // Helper methods
@@ -326,23 +187,6 @@ public class ReportServiceImpl implements ReportService {
             report.getCreatedAt(),
             report.getUpdatedAt(),
             report.getHandledAt()
-        );
-    }
-
-    private PostReportResponse mapToPostReportResponse(PostReport postReport) {
-        return new PostReportResponse(
-            postReport.getId(),
-            postReport.getReporter().getUsername(),
-            postReport.getReportedPost().getTitle(),
-            postReport.getReportedPost().getId(),
-            postReport.getReportedPost().getAuthor().getUsername(),
-            postReport.getReason(),
-            postReport.getStatus(),
-            postReport.getHandledByAdmin() != null ? postReport.getHandledByAdmin().getUsername() : null,
-            postReport.getAdminResponse(),
-            postReport.getCreatedAt(),
-            postReport.getUpdatedAt(),
-            postReport.getHandledAt()
         );
     }
 }

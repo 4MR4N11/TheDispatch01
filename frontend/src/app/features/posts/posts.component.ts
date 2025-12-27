@@ -41,7 +41,6 @@ export class PostDetailComponent {
   protected readonly reportCategory = signal('');
   protected readonly reportMessage = signal('');
   protected readonly showEditPostModal = signal(false);
-  protected readonly failedAvatars = signal<Set<string>>(new Set());
   protected readonly deletingPost = signal(false);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
@@ -315,24 +314,6 @@ export class PostDetailComponent {
     return username?.charAt(0).toUpperCase() || 'U';
   }
 
-  getAvatarUrl(avatar?: string): string {
-    if (!avatar) return '';
-    if (avatar.startsWith('http')) {
-      return avatar;
-    }
-    return `${environment.apiUrl}${avatar}`;
-  }
-
-  getPostAuthorAvatar(): string {
-    const post = this.post();
-    return this.getAvatarUrl(post?.authorAvatar);
-  }
-
-  getCurrentUserAvatar(): string {
-    const user = this.currentUser();
-    return this.getAvatarUrl(user?.avatar);
-  }
-
   getTimeAgo(date: string | Date): string {
     const now = new Date();
     const postDate = new Date(date);
@@ -352,7 +333,9 @@ export class PostDetailComponent {
 
   editPost(postId: number | undefined, event: Event) {
     event.stopPropagation();
-    this.router.navigate(['/edit-post', postId]);
+    if (this.post()) {
+      this.showEditPostModal.set(true);
+    }
   }
 
   viewPost(id: number | undefined) {
@@ -363,18 +346,6 @@ export class PostDetailComponent {
 
   getReadingTime(content: string): string {
     return calculateReadingTime(content);
-  }
-
-  onAvatarError(avatarUrl: string) {
-    const currentFailed = this.failedAvatars();
-    const newFailed = new Set(currentFailed);
-    newFailed.add(avatarUrl);
-    this.failedAvatars.set(newFailed);
-  }
-
-  isAvatarFailed(avatarUrl: string | null | undefined): boolean {
-    if (!avatarUrl) return false;
-    return this.failedAvatars().has(avatarUrl);
   }
 
   isCommentOwner(username: string): boolean {

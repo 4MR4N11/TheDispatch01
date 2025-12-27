@@ -83,7 +83,6 @@ public class CommentServiceImpl implements CommentService {
             commentResponses.add(new CommentResponse(
                 comment.getId(),
                 comment.getAuthor().getUsername(),
-                comment.getAuthor().getAvatar(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()

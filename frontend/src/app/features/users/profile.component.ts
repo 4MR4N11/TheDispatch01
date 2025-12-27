@@ -52,7 +52,6 @@ export class ProfileComponent implements OnInit {
   protected readonly reportCategory = signal('');
   protected readonly reportMessage = signal('');
   protected readonly showReportModal = signal(false);
-  protected readonly failedAvatars = signal<Set<string>>(new Set());
   protected readonly promoting = signal(false);
 
   protected readonly reportCategories = [
@@ -119,24 +118,6 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit() {
     // Initialization now handled in constructor
-  }
-
-  getAvatarUrl(avatar?: string): string {
-    if (!avatar) return '';
-    // If avatar already has full URL, return it; otherwise prepend backend URL
-    if (avatar.startsWith('http')) {
-      return avatar;
-    }
-    return `${environment.apiUrl}${avatar}`;
-  }
-
-  getProfileAvatarUrl(): string {
-    const user = this.user();
-    return this.getAvatarUrl(user?.avatar);
-  }
-
-  getUserAvatarUrl(user: UserResponse): string {
-    return this.getAvatarUrl(user.avatar);
   }
 
   private initializeProfile(username: string | null) {
@@ -368,31 +349,21 @@ export class ProfileComponent implements OnInit {
   deleteUser() {
     const userId = this.user()?.id;
     if (userId && this.isAdmin()) {
-      this.deleting.set(true);
-      this.apiService.deleteUser(userId).subscribe({
-        next: () => {
-          this.deleting.set(false);
-          this.notificationService.success('User deleted successfully');
-          this.router.navigate(['/']);
-        },
-        error: () => {
-          this.deleting.set(false);
-          this.notificationService.error('Failed to delete user');
-        },
-      });
+      if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+        this.deleting.set(true);
+        this.apiService.deleteUser(userId).subscribe({
+          next: () => {
+            this.deleting.set(false);
+            this.notificationService.success('User deleted successfully');
+            this.router.navigate(['/']);
+          },
+          error: () => {
+            this.deleting.set(false);
+            this.notificationService.error('Failed to delete user');
+          },
+        });
+      }
     }
-  }
-
-  onAvatarError(avatarUrl: string) {
-    const currentFailed = this.failedAvatars();
-    const newFailed = new Set(currentFailed);
-    newFailed.add(avatarUrl);
-    this.failedAvatars.set(newFailed);
-  }
-
-  isAvatarFailed(avatarUrl: string | null | undefined): boolean {
-    if (!avatarUrl) return false;
-    return this.failedAvatars().has(avatarUrl);
   }
 
   isUserAdmin(): boolean {

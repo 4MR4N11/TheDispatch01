@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/auth/api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -29,14 +29,9 @@ export class EditProfileComponent implements OnInit {
   protected email = '';
   protected firstName = '';
   protected lastName = '';
-  protected avatar = '';
   protected currentPassword = '';
   protected newPassword = '';
   protected confirmPassword = '';
-
-  // Image preview
-  protected avatarPreview = '';
-  protected selectedFile: File | null = null;
 
   // Original values to detect changes
   private originalUsername = '';
@@ -54,14 +49,6 @@ export class EditProfileComponent implements OnInit {
         this.email = user.email;
         this.firstName = user.firstname;
         this.lastName = user.lastname;
-        this.avatar = user.avatar || '';
-
-        // Set avatar preview with full URL
-        if (user.avatar) {
-          this.avatarPreview = user.avatar.startsWith('http')
-            ? user.avatar
-            : `${environment.apiUrl}${user.avatar}`;
-        }
 
         this.originalUsername = user.username;
         this.originalEmail = user.email;
@@ -73,44 +60,6 @@ export class EditProfileComponent implements OnInit {
         this.loading.set(false);
       }
     });
-  }
-
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        this.notificationService.error('Invalid file type. Only JPG, PNG, GIF, and WebP are allowed');
-        return;
-      }
-
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        this.notificationService.error('File size must be less than 5MB');
-        return;
-      }
-
-      this.selectedFile = file;
-
-      // Show preview
-      const reader = new FileReader();
-      if (file) {
-        this.avatarPreview = URL.createObjectURL(file);
-      }
-      reader.onload = () => {
-        this.avatarPreview = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  removeAvatar() {
-    this.selectedFile = null;
-    this.avatarPreview = '';
-    this.avatar = '';
   }
 
   async updateProfile() {
@@ -133,32 +82,12 @@ export class EditProfileComponent implements OnInit {
     this.loading.set(true);
 
     try {
-      // Upload avatar if selected
-      let avatarUrl = this.avatar;
-      if (this.selectedFile) {
-        this.uploading.set(true);
-        const formData = new FormData();
-        formData.append('file', this.selectedFile);
-
-        try {
-          const uploadResponse = await this.apiService.uploadAvatar(formData).toPromise();
-          avatarUrl = uploadResponse?.url || '';
-          this.uploading.set(false);
-        } catch (error) {
-          this.uploading.set(false);
-          this.notificationService.error(ErrorHandler.getUploadErrorMessage(error));
-          this.loading.set(false);
-          return;
-        }
-      }
-
       // Prepare update request
       const updateRequest: any = {
         username: this.username,
         email: this.email,
         firstname: this.firstName,
-        lastname: this.lastName,
-        avatar: avatarUrl
+        lastname: this.lastName
       };
 
       // Only include password fields if changing password
@@ -185,7 +114,6 @@ export class EditProfileComponent implements OnInit {
             this.currentPassword = '';
             this.newPassword = '';
             this.confirmPassword = '';
-            this.selectedFile = null;
 
             // Update original values
             this.originalUsername = updatedUser.username;

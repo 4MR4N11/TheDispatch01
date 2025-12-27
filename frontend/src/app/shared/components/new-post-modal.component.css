@@ -142,7 +142,7 @@
   line-height: 1.6;
   resize: vertical;
   transition: border-color 0.2s ease;
-  min-height: 200px;
+  min-height: 250px;
   background: var(--color-bg-primary);
 }
 
@@ -156,6 +156,40 @@
   background: var(--color-bg-secondary);
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* Content Textarea - Vintage Newspaper Style */
+.content-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 3px double var(--color-border);
+  border-radius: 0;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.8;
+  resize: vertical;
+  transition: all 0.2s ease;
+  min-height: 250px;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+.content-textarea:focus {
+  outline: none;
+  border-color: var(--color-text-primary);
+  box-shadow: inset 0 0 0 1px var(--color-text-primary);
+}
+
+.content-textarea:disabled {
+  background: var(--color-bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.content-textarea::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+  font-style: italic;
 }
 
 /* Editor.js Container */
@@ -176,11 +210,16 @@
   overflow: hidden;
 }
 
-.preview-image {
+.preview-image,
+.preview-video {
   width: 100%;
   max-height: 300px;
   object-fit: cover;
   display: block;
+}
+
+.preview-video {
+  background: #000;
 }
 
 .btn-remove-preview {

@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import _blog.blog.dto.AdminReportActionRequest;
 import _blog.blog.dto.AdminReportStatusRequest;
-import _blog.blog.dto.PostReportResponse;
 import _blog.blog.dto.ReportRequest;
 import _blog.blog.dto.ReportResponse;
 import _blog.blog.entity.User;
@@ -74,23 +72,6 @@ public class ReportController {
 
         try {
             reportService.reportPost(reporter.getId(), postId, request.getReason());
-            return ResponseEntity.ok("Post reported successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    // Alternative endpoint for PostReport entity (if you prefer to use the existing entity)
-    @PostMapping("/post-report/{postId}")
-    public ResponseEntity<String> createPostReport(
-            @PathVariable Long postId,
-            @RequestBody @Valid ReportRequest request,
-            Authentication auth
-    ) {
-        User reporter = userService.getUserByUsername(auth.getName());
-        
-        try {
-            reportService.createPostReport(reporter.getId(), postId, request.getReason());
             return ResponseEntity.ok("Post reported successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -162,30 +143,6 @@ public class ReportController {
         return ResponseEntity.ok(reports);
     }
 
-    // Admin endpoints - PostReports management
-    @GetMapping("/admin/post-reports")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<PostReportResponse>> getAllPostReports(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<PostReportResponse> reports = reportService.getAllPostReports(pageable);
-        return ResponseEntity.ok(reports);
-    }
-
-    @GetMapping("/admin/post-reports/status/{status}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<PostReportResponse>> getPostReportsByStatus(
-            @PathVariable ReportStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<PostReportResponse> reports = reportService.getPostReportsByStatus(status, pageable);
-        return ResponseEntity.ok(reports);
-    }
-
     // Admin actions
     @PutMapping("/admin/handle/{reportId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -195,27 +152,10 @@ public class ReportController {
             Authentication auth
     ) {
         User admin = userService.getUserByUsername(auth.getName());
-        
+
         try {
             reportService.handleStatusReport(reportId, admin.getId(), request);
             return ResponseEntity.ok("Report handled successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/admin/handle-post-report/{postReportId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> handlePostReport(
-            @PathVariable Long postReportId,
-            @RequestBody @Valid AdminReportActionRequest request,
-            Authentication auth
-    ) {
-        User admin = userService.getUserByUsername(auth.getName());
-        
-        try {
-            reportService.handlePostReport(postReportId, admin.getId(), request);
-            return ResponseEntity.ok("Post report handled successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -233,20 +173,6 @@ public class ReportController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> getTotalReportsCount() {
         long count = reportService.getTotalReportsCount();
-        return ResponseEntity.ok(count);
-    }
-
-    @GetMapping("/admin/stats/post-reports/pending")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Long> getPendingPostReportsCount() {
-        long count = reportService.getPendingPostReportsCount();
-        return ResponseEntity.ok(count);
-    }
-
-    @GetMapping("/admin/stats/post-reports/total")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Long> getTotalPostReportsCount() {
-        long count = reportService.getTotalPostReportsCount();
         return ResponseEntity.ok(count);
     }
 }

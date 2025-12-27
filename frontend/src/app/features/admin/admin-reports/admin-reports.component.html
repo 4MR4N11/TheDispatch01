@@ -1,0 +1,96 @@
+@if (loading()) {
+  <div class="loading-container">
+    <div class="spinner-large"></div>
+    <p>Loading reports...</p>
+  </div>
+} @else if (reports().length === 0) {
+  <div class="empty-state">
+    <p>No reports to review</p>
+  </div>
+} @else {
+  <div class="reports-grid">
+    @for (report of reports(); track report.id) {
+      <div class="report-card">
+        <div class="report-header">
+          <div class="report-type-badge" [class]="report.type === 'USER_REPORT' ? 'type-user' : 'type-post'">
+            {{ report.type }}
+          </div>
+          <span class="report-status" [class]="getStatusClass(report.status)">
+            {{ report.status }}
+          </span>
+        </div>
+
+        <div class="report-body">
+          @if (report.type === 'USER_REPORT') {
+            <div class="report-info">
+              <strong>Reported User:</strong>
+              <a class="link" (click)="viewProfile(report.reportedUsername)">
+                {{ report.reportedUsername }}
+              </a>
+            </div>
+          } @else {
+            <div class="report-info">
+              <strong>Post Title:</strong>
+              @if (report.reportedPostId) {
+                <a class="link" (click)="viewPost(report.reportedPostId)">
+                  {{ report.reportedPostTitle }}
+                </a>
+              } @else {
+                {{ report.reportedPostTitle }}
+              }
+            </div>
+          }
+
+          <div class="report-info">
+            <strong>Reporter:</strong> {{ report.reporterUsername }}
+          </div>
+
+          <div class="report-info">
+            <strong>Reason:</strong>
+            <p class="reason-text">{{ report.reason }}</p>
+          </div>
+
+          <div class="report-info">
+            <strong>Submitted:</strong> {{ formatDate(report.createdAt) }}
+          </div>
+
+          @if (report.handledAt) {
+            <div class="report-info">
+              <strong>Handled:</strong> {{ formatDate(report.handledAt) }}
+            </div>
+          }
+
+          @if (report.handledByAdminUsername) {
+            <div class="report-info">
+              <strong>Handled By:</strong> {{ report.handledByAdminUsername }}
+            </div>
+          }
+
+          @if (report.adminResponse) {
+            <div class="admin-response-box">
+              <strong>Admin Response:</strong>
+              <p>{{ report.adminResponse }}</p>
+            </div>
+          }
+        </div>
+
+        @if (report.status === 'PENDING') {
+          <div class="report-actions">
+            <button class="btn-approve" (click)="approveReport(report.id)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+              </svg>
+              Approve
+            </button>
+            <button class="btn-reject" (click)="rejectReport(report.id)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+              Reject
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

@@ -11,17 +11,9 @@
       <div class="profile-header-card">
         <div class="profile-header-content">
           <!-- Avatar -->
-          @if (getProfileAvatarUrl() && !isAvatarFailed(user()?.avatar)) {
-            <img
-              [src]="getProfileAvatarUrl()"
-              alt="{{ user()?.username }}"
-              class="profile-avatar-img"
-              (error)="onAvatarError(user()?.avatar || '')">
-          } @else {
-            <div class="profile-avatar">
-              {{ avatarInitial() }}
-            </div>
-          }
+          <div class="profile-avatar">
+            {{ avatarInitial() }}
+          </div>
 
           <!-- User Info -->
           <div class="profile-info">
@@ -127,15 +119,7 @@
               <div class="post-card" (click)="viewPost(post.id)">
                 <div class="post-header">
                   <div class="post-author-info">
-                    @if (getProfileAvatarUrl() && !isAvatarFailed(user()?.avatar)) {
-                      <img
-                        [src]="getProfileAvatarUrl()"
-                        alt="{{ u.username }}"
-                        class="author-avatar-img"
-                        (error)="onAvatarError(user()?.avatar || '')">
-                    } @else {
-                      <div class="author-avatar">{{ avatarInitial() }}</div>
-                    }
+                    <div class="author-avatar">{{ avatarInitial() }}</div>
                     <div>
                       <div class="author-name">{{ u.username }}</div>
                       <div class="post-date">@{{ u.username }} · {{ post.created_at | date: 'M/d/yyyy' }}</div>
@@ -168,15 +152,7 @@
           <div class="users-list">
             @for (follower of followers(); track follower.id) {
               <div class="user-card" (click)="viewUser(follower.username)">
-                @if (getUserAvatarUrl(follower) && !isAvatarFailed(follower.avatar)) {
-                  <img
-                    [src]="getUserAvatarUrl(follower)"
-                    alt="{{ follower.username }}"
-                    class="user-avatar-img"
-                    (error)="onAvatarError(follower.avatar || '')">
-                } @else {
-                  <div class="user-avatar">{{ follower.username.charAt(0).toUpperCase() }}</div>
-                }
+                <div class="user-avatar">{{ follower.username.charAt(0).toUpperCase() }}</div>
                 <div class="user-info">
                   <div class="user-name">{{ follower.firstname }} {{ follower.lastname }}</div>
                   <div class="user-username">@{{ follower.username }}</div>
@@ -194,15 +170,7 @@
           <div class="users-list">
             @for (sub of subscriptions(); track sub.id) {
               <div class="user-card" (click)="viewUser(sub.username)">
-                @if (getUserAvatarUrl(sub) && !isAvatarFailed(sub.avatar)) {
-                  <img
-                    [src]="getUserAvatarUrl(sub)"
-                    alt="{{ sub.username }}"
-                    class="user-avatar-img"
-                    (error)="onAvatarError(sub.avatar || '')">
-                } @else {
-                  <div class="user-avatar">{{ sub.username.charAt(0).toUpperCase() }}</div>
-                }
+                <div class="user-avatar">{{ sub.username.charAt(0).toUpperCase() }}</div>
                 <div class="user-info">
                   <div class="user-name">{{ sub.firstname }} {{ sub.lastname }}</div>
                   <div class="user-username">@{{ sub.username }}</div>

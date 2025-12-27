@@ -13,8 +13,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import _blog.blog.exception.UserAlreadyExistsException;
-
 
 /**
  * ✅ SECURITY FIX: Global Exception Handler
@@ -185,17 +183,6 @@ public class GlobalExceptionHandler {
         response.put("code", code);
         response.put("timestamp", System.currentTimeMillis());
         return response;
-    }
-
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<Map<String, Object>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        log.warn("User already exists: {}", ex.getMessage());
-        return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-            .body(createErrorResponse(
-                "User with the given username or email already exists",
-                HttpStatus.CONFLICT.value()
-            ));
     }
 
     @ExceptionHandler(BannedException.class)

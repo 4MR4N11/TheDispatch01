@@ -17,7 +17,6 @@ import lombok.Setter;
 public class NotificationDto {
     private Long id;
     private String actorUsername;
-    private String actorAvatar;
     private NotificationType type;
     private String message;
     private Long postId;

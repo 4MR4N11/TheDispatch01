@@ -19,6 +19,7 @@ public interface NotificationService {
     void markAsRead(Long notificationId, Long userId);
     void markAllAsRead(Long userId);
     void notifyNewFollower(User follower, User followed);
+    void notifyNewPost(User author, Post post);
     void notifyPostLike(User liker, Post post);
     void notifyPostComment(User commenter, Post post, Comment comment);
     void notifyCommentReply(User replier, Comment parentComment, Comment reply);

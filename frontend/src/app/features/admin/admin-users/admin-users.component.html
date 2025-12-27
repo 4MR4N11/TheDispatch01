@@ -1,0 +1,71 @@
+@if (loading()) {
+  <div class="loading-container">
+    <div class="spinner-large"></div>
+    <p>Loading users...</p>
+  </div>
+} @else if (users().length === 0) {
+  <div class="empty-state">
+    <p>No users found</p>
+  </div>
+} @else {
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Posts</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr>
+            <td>
+              <div class="user-cell" (click)="viewProfile(user.username)" style="cursor: pointer;">
+                <div class="user-avatar">{{ getUserInitial(user.username) }}</div>
+                <div class="user-details">
+                  <div class="user-name">{{ user.firstname }} {{ user.lastname }}</div>
+                  <div class="user-username">@{{ user.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="role-badge" [class.admin-role]="user.role === 'ADMIN'">
+                {{ user.role }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [class.banned]="user.banned">
+                {{ user.banned ? 'Banned' : 'Active' }}
+              </span>
+            </td>
+            <td>{{ user.posts.length || 0 }}</td>
+            <td>
+              <div class="action-buttons">
+                @if (user.role !== 'ADMIN') {
+                  @if (user.banned) {
+                    <button class="btn-unban" (click)="unbanUser(user.id)">Unban</button>
+                  } @else {
+                    <button class="btn-ban" (click)="banUser(user.id)">Ban</button>
+                  }
+                  <button class="btn-delete" (click)="deleteUser(user.id)">Delete</button>
+                  <button class="btn-promote" (click)="promoteToAdmin(user.id)" [disabled]="promoting()">
+                    @if (promoting()) {
+                      Promoting...
+                    } @else {
+                      Promote to Admin
+                    }
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

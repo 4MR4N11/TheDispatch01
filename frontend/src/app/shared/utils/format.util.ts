@@ -46,57 +46,6 @@ export function getTimeAgo(date: string | Date): string {
 }
 
 /**
- * Get full avatar URL from relative path
- */
-export function getAvatarUrl(avatar: string | null | undefined): string {
-  if (!avatar) {
-    return '';
-  }
-
-  // If it's already a full URL, return as is
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-    return avatar;
-  }
-
-  // If it starts with /uploads/, prepend API URL
-  if (avatar.startsWith('/uploads/')) {
-    return `${environment.apiUrl}${avatar}`;
-  }
-
-  // Otherwise, assume it needs /uploads/ prefix
-  return `${environment.apiUrl}/uploads/${avatar}`;
-}
-
-/**
- * Strip HTML tags from content and create an excerpt
- * Uses DOMParser for safe HTML parsing without XSS risks
- */
-export function getExcerpt(content: string, maxLength: number = 150): string {
-  if (!content) {
-    return '';
-  }
-
-  // ✅ SECURITY FIX: Use DOMParser instead of innerHTML to prevent XSS
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(content, 'text/html');
-  const stripped = doc.body.textContent || '';
-
-  // Truncate to maxLength
-  if (stripped.length <= maxLength) {
-    return stripped;
-  }
-
-  return stripped.substring(0, maxLength).trim() + '...';
-}
-
-/**
- * Get content preview without HTML tags
- */
-export function getContentPreview(content: string, maxLength: number = 200): string {
-  return getExcerpt(content, maxLength);
-}
-
-/**
  * Get author initials from username
  */
 export function getAuthorInitial(author: string): string {
@@ -135,22 +84,6 @@ export function validatePassword(password: string): PasswordValidationResult {
 
   if (password.length < 8) {
     errors.push('Password must be at least 8 characters');
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
-  }
-
-  if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
-  }
-
-  if (!/[0-9]/.test(password)) {
-    errors.push('Password must contain at least one number');
-  }
-
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push('Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)');
   }
 
   return {

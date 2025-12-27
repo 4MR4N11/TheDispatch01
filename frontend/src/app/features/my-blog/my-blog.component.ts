@@ -89,7 +89,11 @@ export class MyBlogComponent implements OnInit {
   editPost(id: number | undefined, event: Event) {
     event.stopPropagation();
     if (id) {
-      this.router.navigate(['/edit-post', id]);
+      const post = this.posts().find(p => p.id === id);
+      if (post) {
+        this.selectedPost.set(post);
+        this.showEditPostModal.set(true);
+      }
     }
   }
 
@@ -114,7 +118,7 @@ export class MyBlogComponent implements OnInit {
   }
 
   createNewPost() {
-    this.router.navigate(['/create-post']);
+    this.showNewPostModal.set(true);
   }
 
   closeNewPostModal() {

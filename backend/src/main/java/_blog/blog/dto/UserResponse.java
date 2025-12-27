@@ -18,7 +18,6 @@ public class UserResponse {
     private String lastname;
     private String username;
     private String email;
-    private String avatar;
     private String role;
     private boolean banned;
     private List<String> subscriptions;

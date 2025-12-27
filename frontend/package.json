@@ -30,12 +30,6 @@
     "@angular/material": "^20.2.5",
     "@angular/platform-browser": "^21.0.1",
     "@angular/router": "^21.0.1",
-    "@editorjs/editorjs": "^2.31.0",
-    "@editorjs/embed": "^2.7.6",
-    "@editorjs/header": "^2.8.8",
-    "@editorjs/image": "^2.10.3",
-    "@editorjs/list": "^2.0.8",
-    "editorjs-html": "^4.0.5",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

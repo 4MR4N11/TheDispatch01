@@ -10,7 +10,6 @@ import _blog.blog.exception.BadRequestException;
 import _blog.blog.exception.BannedException;
 import _blog.blog.exception.DuplicateResourceException;
 import _blog.blog.exception.ResourceNotFoundException;
-import _blog.blog.exception.UserAlreadyExistsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.authentication.DisabledException;
 
@@ -73,12 +72,9 @@ public class UserServiceImpl implements UserService {
         
         if (userRepository.findByUsername(request.getUsername()).isPresent()
             || userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("Username or email already in use");
+            throw new DuplicateResourceException("Username or email already in use");
         }
         User user = UserMapper.toEntity(request, passwordEncoder);
-        if (user.getAvatar() == null) {
-            user.setAvatar("");
-        }
         return userRepository.save(user);
     }
 
@@ -125,7 +121,6 @@ public class UserServiceImpl implements UserService {
             user.getLastName(),
             user.getUsername(),
             user.getEmail(),
-            user.getAvatar(),
             user.getRole().name(),
             user.isBanned(),
             subscriptions,
@@ -264,10 +259,6 @@ public class UserServiceImpl implements UserService {
             user.setLastName(request.getLastName());
         }
 
-        if (request.getAvatar() != null) {
-            user.setAvatar(request.getAvatar());
-        }
-
         User updatedUser = userRepository.save(user);
 
         return new UserResponse(
@@ -276,7 +267,6 @@ public class UserServiceImpl implements UserService {
             updatedUser.getLastName(),
             updatedUser.getUsername(),
             updatedUser.getEmail(),
-            updatedUser.getAvatar(),
             updatedUser.getRole().name(),
             updatedUser.isBanned(),
             updatedUser.getSubscriptions().stream()

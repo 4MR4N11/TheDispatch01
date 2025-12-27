@@ -6,18 +6,9 @@
         <!-- Post Header with Author Info -->
         <div class="post-detail-header">
           <div class="author-section">
-            @if (getPostAuthorAvatar() && !isAvatarFailed(p.authorAvatar)) {
-              <img
-                [src]="getPostAuthorAvatar()"
-                [alt]="p.author"
-                class="author-avatar-img"
-                (click)="viewProfile(p.author)"
-                (error)="onAvatarError(p.authorAvatar)">
-            } @else {
-              <div class="author-avatar" (click)="viewProfile(p.author)">
-                {{ getUserInitial(p.author) }}
-              </div>
-            }
+            <div class="author-avatar" (click)="viewProfile(p.author)">
+              {{ getUserInitial(p.author) }}
+            </div>
             <div class="author-details">
               <div class="author-name" (click)="viewProfile(p.author)">{{ p.author }}</div>
               <div class="post-metadata">
@@ -118,17 +109,9 @@
 
         <!-- Add Comment Form -->
         <form class="add-comment-form" (ngSubmit)="addComment()">
-          @if (getCurrentUserAvatar() && !isAvatarFailed(currentUser()?.avatar)) {
-            <img
-              [src]="getCurrentUserAvatar()"
-              [alt]="currentUser()?.username"
-              class="comment-avatar-img"
-              (error)="onAvatarError(currentUser()?.avatar || '')">
-          } @else {
-            <div class="comment-avatar">
-              {{ getUserInitial(currentUser()?.username || '') }}
-            </div>
-          }
+          <div class="comment-avatar">
+            {{ getUserInitial(currentUser()?.username || '') }}
+          </div>
           <div class="comment-input-wrapper">
             <textarea
               class="comment-textarea"
@@ -156,18 +139,9 @@
           <div class="comments-list">
             @for (comment of p.comments; track comment.id) {
               <div class="comment-item">
-                @if (getAvatarUrl(comment.authorAvatar) && !isAvatarFailed(comment.authorAvatar)) {
-                  <img
-                    [src]="getAvatarUrl(comment.authorAvatar)"
-                    [alt]="comment.authorUsername"
-                    class="comment-avatar-img"
-                    (click)="viewProfile(comment.authorUsername)"
-                    (error)="onAvatarError(comment.authorAvatar)">
-                } @else {
-                  <div class="comment-avatar" (click)="viewProfile(comment.authorUsername)">
-                    {{ getUserInitial(comment.authorUsername) }}
-                  </div>
-                }
+                <div class="comment-avatar" (click)="viewProfile(comment.authorUsername)">
+                  {{ getUserInitial(comment.authorUsername) }}
+                </div>
                 <div class="comment-content-wrapper">
                   @if (commentEdit()?.id === comment.id) {
                     <!-- Edit Mode -->

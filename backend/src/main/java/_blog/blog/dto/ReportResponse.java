@@ -19,9 +19,9 @@ public class ReportResponse {
     private ReportType type;
     private String reason;
     private ReportStatus status;
-    private String reportedUsername; // for user reports
-    private String reportedPostTitle; // for post reports
-    private Long reportedPostId; // for post reports
+    private String reportedUsername;
+    private String reportedPostTitle;
+    private Long reportedPostId;
     private String handledByAdminUsername;
     private String adminResponse;
     private Date createdAt;

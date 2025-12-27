@@ -31,9 +31,19 @@ export class NewPostModalComponent {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
 
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        this.notificationService.error('File size must be less than 10MB');
+      // Validate file type and size
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB for videos, 10MB for images
+
+      if (!isImage && !isVideo) {
+        this.notificationService.error('Only images and videos are allowed');
+        return;
+      }
+
+      if (file.size > maxSize) {
+        const maxSizeMB = isVideo ? '50MB' : '10MB';
+        this.notificationService.error(`File size must be less than ${maxSizeMB}`);
         return;
       }
 
@@ -170,5 +180,15 @@ export class NewPostModalComponent {
 
   stopPropagation(event: Event) {
     event.stopPropagation();
+  }
+
+  isVideoFile(): boolean {
+    return this.selectedFile()?.type.startsWith('video/') || false;
+  }
+
+  isVideoUrl(): boolean {
+    const url = this.mediaUrl();
+    if (!url) return false;
+    return url.toLowerCase().match(/\.(mp4|webm|ogg|mov)($|\?)/) !== null;
   }
 }

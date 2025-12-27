@@ -12,8 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRequest {
-
-    // ✅ SECURITY FIX: Added validation to prevent XSS and ensure valid input
     @NotBlank(message = "Comment content cannot be empty")
     @Size(min = 1, max = 5000, message = "Comment must be between 1 and 5000 characters")
     private String content;

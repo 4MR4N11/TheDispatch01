@@ -35,7 +35,7 @@ public class SubscriptionController {
             @PathVariable Long targetId,
             Authentication auth
     ) {
-        User user = userService.getUserByUsername(auth.getName()); // or fetch via your UserDetails impl
+        User user = userService.getUserByUsername(auth.getName());
         subscriptionService.subscribe(user.getId(), targetId);
         return ResponseEntity.ok("Subscribed successfully");
     }
@@ -63,7 +63,6 @@ public class SubscriptionController {
             u.getLastName(),
             u.getUsername(),
             u.getEmail(),
-            u.getAvatar(),
             u.getRole().toString(),
             u.isBanned(),
             u.getSubscriptions().stream()
@@ -87,7 +86,6 @@ public class SubscriptionController {
             u.getLastName(),
             u.getUsername(),
             u.getEmail(),
-            u.getAvatar(),
             u.getRole().toString(),
             u.isBanned(),
             u.getSubscriptions().stream()
@@ -111,7 +109,6 @@ public class SubscriptionController {
             u.getLastName(),
             u.getUsername(),
             u.getEmail(),
-            u.getAvatar(),
             u.getRole().toString(),
             u.isBanned(),
             u.getSubscriptions().stream()
@@ -135,7 +132,6 @@ public class SubscriptionController {
             u.getLastName(),
             u.getUsername(),
             u.getEmail(),
-            u.getAvatar(),
             u.getRole().toString(),
             u.isBanned(),
             u.getSubscriptions().stream()

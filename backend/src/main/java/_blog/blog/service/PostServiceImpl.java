@@ -14,6 +14,7 @@ import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
 import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.mapper.PostMapper;
+import _blog.blog.mapper.PostResponseMapper;
 import _blog.blog.repository.NotificationRepository;
 import _blog.blog.repository.PostRepository;
 import _blog.blog.repository.ReportRepository;
@@ -23,18 +24,18 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final SubscriptionService subscriptionService;
-    private final CommentService commentService;
-    private final LikeService likeService;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final ReportRepository reportRepository;
+    private final PostResponseMapper postResponseMapper;
 
-    public PostServiceImpl(LikeService likeService, CommentService commentService, PostRepository postRepository, SubscriptionService subscriptionService, NotificationRepository notificationRepository, ReportRepository reportRepository) {
+    public PostServiceImpl(PostRepository postRepository, SubscriptionService subscriptionService, NotificationRepository notificationRepository, NotificationService notificationService, ReportRepository reportRepository, PostResponseMapper postResponseMapper) {
         this.postRepository = postRepository;
         this.subscriptionService = subscriptionService;
-        this.commentService = commentService;
-        this.likeService = likeService;
         this.notificationRepository = notificationRepository;
+        this.notificationService = notificationService;
         this.reportRepository = reportRepository;
+        this.postResponseMapper = postResponseMapper;
     }
 
     @Override
@@ -51,7 +52,12 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Post content cannot be empty");
         }
         Post post = PostMapper.toEntity(request, author);
-        return postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+
+        // Notify followers about the new post
+        notificationService.notifyNewPost(author, savedPost);
+
+        return savedPost;
     }
 
     @Override
@@ -124,27 +130,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponse> getPostsRespByUserId(Long userId) {
-        List<Post> Posts = getPostsById(userId);
-        List<PostResponse> PostResponses = new ArrayList<>();
-        for (Post p : Posts) {
-            PostResponses.add(new PostResponse(
-                p.getId(),
-                p.getAuthor().getUsername(),
-                p.getAuthor().getAvatar(),
-                p.getTitle(),
-                p.getContent(),
-                p.getMediaType(),
-                p.getMediaUrl(),
-                p.isHidden(),
-                commentService.getCommentsRespByPost(p.getId()),
-                p.getCreatedAt(),
-                p.getUpdatedAt(),
-                likeService.getPostLikeCount(p.getId()),
-                likeService.getUsersWhoLikedPost(p.getId())
-            ));
-        }
-
-        return PostResponses;
+        List<Post> posts = getPostsById(userId);
+        return postResponseMapper.toResponseList(posts);
     }
 
     @Override

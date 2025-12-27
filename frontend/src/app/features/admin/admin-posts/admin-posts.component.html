@@ -1,0 +1,44 @@
+@if (loading()) {
+  <div class="loading-container">
+    <div class="spinner-large"></div>
+    <p>Loading posts...</p>
+  </div>
+} @else if (posts().length === 0) {
+  <div class="empty-state">
+    <p>No posts found</p>
+  </div>
+} @else {
+  <div class="posts-grid">
+    @for (post of posts(); track post.id) {
+      <div class="post-card" [class.hidden-post]="post.hidden">
+        <div class="post-header-row">
+          <div class="post-author-info">
+            <div class="post-author">@{{ post.author }}</div>
+            <div class="post-date">{{ formatDate(post.created_at) }}</div>
+          </div>
+          @if (post.hidden) {
+            <span class="hidden-badge">Hidden</span>
+          }
+        </div>
+
+        <h3 class="post-title">{{ post.title }}</h3>
+        <p class="post-content">{{ getExcerpt(post.content) }}</p>
+
+        <div class="post-stats">
+          <span>{{ post.likeCount }} likes</span>
+          <span>{{ post.comments.length || 0 }} comments</span>
+        </div>
+
+        <div class="post-actions">
+          <button class="btn-view" (click)="viewPost(post.id)">View</button>
+          @if (post.hidden) {
+            <button class="btn-unhide" (click)="unhidePost(post.id)">Unhide</button>
+          } @else {
+            <button class="btn-hide" (click)="hidePost(post.id)">Hide</button>
+          }
+          <button class="btn-delete-post" (click)="deletePost(post.id)">Delete</button>
+        </div>
+      </div>
+    }
+  </div>
+}

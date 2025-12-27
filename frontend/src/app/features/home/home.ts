@@ -1,7 +1,5 @@
 // src/app/features/home/home.component.ts
-import edjsHTML from 'editorjs-html';
 import { ChangeDetectionStrategy, Component, OnInit, AfterViewInit, OnDestroy, inject, signal} from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,7 +28,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   protected readonly posts = signal<PostResponse[]>([]);
   protected readonly currentUser = this.authService.currentUser;
@@ -43,7 +40,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly reportCategory = signal('');
   protected readonly reportMessage = signal('');
   protected readonly reporting = signal(false);
-  protected readonly failedAvatars = signal<Set<string>>(new Set());
 
   protected currentPage = signal(0);
   protected totalPages = signal(1);
@@ -84,7 +80,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   editPost(postId: number, event: Event) {
     event.stopPropagation();
     this.closeAllMenus();
-    this.router.navigate(['/edit-post', postId]);
+    const post = this.posts().find(p => p.id === postId);
+    if (post) {
+      this.selectedPost.set(post);
+      this.showEditPostModal.set(true);
+    }
   }
 
   deletePost(postId: number, event: Event) {
@@ -146,7 +146,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         }, 50);
       },
       error: (error) => {
-        console.error('Error loading feed:', error);
         this.loading.set(false);
         this.isLoadingMore.set(false);
         this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to load feed'));
@@ -170,7 +169,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   // }
 
   openNewPostModal() {
-    this.router.navigate(['/create-post']);
+    this.showNewPostModal.set(true);
   }
 
   closeNewPostModal() {
@@ -268,87 +267,18 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return postDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
-  getPostHTML(content: string): SafeHtml | null {
-    if (!content) return null;
-
-    try {
-      const contentJSON = typeof content === 'string' ? JSON.parse(content) : content;
-      const edjsParser = edjsHTML({
-        video: (block: any) => {
-          return `<video controls style="max-width: 100%; border-radius: 8px;">
-            <source src="${block.data.file.url}" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>`;
-        }
-      });
-      const html = edjsParser.parse(contentJSON);
-      return this.sanitizer.bypassSecurityTrustHtml(html);
-    } catch (err) {
-      console.error('Error parsing Editor.js content', err);
-      // Fallback: treat as plain text
-      return this.sanitizer.bypassSecurityTrustHtml(`<p>${content}</p>`);
-    }
-  }
 
   getContentPreview(content: string, maxLength: number = 200): string {
-    try {
-      // Parse Editor.js JSON
-      const contentJSON = typeof content === 'string' ? JSON.parse(content) : content;
-      const edjsParser = edjsHTML({
-        video: (block: any) => {
-          return '[Video]';
-        },
-        image: (block: any) => {
-          return '[Image]';
-        }
-      });
-      const html = edjsParser.parse(contentJSON);
-
-      // Convert to string if it's an array
-      const htmlString = Array.isArray(html) ? html.join('') : String(html);
-
-      // Strip HTML tags
-      const strippedContent = htmlString.replace(/<[^>]*>/g, '');
-      // Remove extra whitespace
-      const cleanContent = strippedContent.replace(/\s+/g, ' ').trim();
-      // Truncate to maxLength
-      if (cleanContent.length <= maxLength) {
-        return cleanContent;
-      }
-      return cleanContent.substring(0, maxLength) + '...';
-    } catch (err) {
-      console.error('Error parsing content for preview', err);
-      // Fallback: return truncated raw content
-      if (content.length <= maxLength) {
-        return content;
-      }
-      return content.substring(0, maxLength) + '...';
+    if (!content) return '';
+    // Plain text truncation
+    if (content.length <= maxLength) {
+      return content;
     }
+    return content.substring(0, maxLength) + '...';
   }
 
   getExcerpt(content: string): string {
     return this.getContentPreview(content, 150);
-  }
-
-  getFullAvatarUrl(avatar: string): string {
-    if (!avatar) return '';
-    // If avatar already has full URL, return it; otherwise prepend backend URL
-    if (avatar.startsWith('http')) {
-      return avatar;
-    }
-    return `${environment.apiUrl}${avatar}`;
-  }
-
-  onAvatarError(avatarUrl: string) {
-    const currentFailed = this.failedAvatars();
-    const newFailed = new Set(currentFailed);
-    newFailed.add(avatarUrl);
-    this.failedAvatars.set(newFailed);
-  }
-
-  isAvatarFailed(avatarUrl: string | null | undefined): boolean {
-    if (!avatarUrl) return false;
-    return this.failedAvatars().has(avatarUrl);
   }
 
   toggleLike(postId: number, event: Event) {

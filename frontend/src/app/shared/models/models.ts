@@ -5,7 +5,6 @@ export interface UserResponse {
   lastname: string;
   username: string;
   email: string;
-  avatar: string;
   role: string;
   banned: boolean;
   subscriptions: string[];
@@ -15,7 +14,6 @@ export interface UserResponse {
 export interface PostResponse {
   id: number,
   author: string;
-  authorAvatar: string;
   title: string;
   content: string;
   media_type: string;
@@ -31,7 +29,6 @@ export interface PostResponse {
 export interface CommentResponse {
   id: number;
   authorUsername: string;
-  authorAvatar: string;
   content: string;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -78,9 +75,9 @@ export interface PostReportResponse {
   handledAt?: string | Date;
 }
 
-export type ReportStatus = "APPROVED" | "REJECTED";
+export type ReportStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-export interface AdminReportActionRequest {
+export interface AdminReportStatusRequest {
   action: ReportStatus;
   adminResponse?: string;
 }
@@ -113,13 +110,11 @@ export interface RegisterRequest {
   password: string;
   firstname: string;
   lastname: string;
-  avatar?: string;
 }
 
 export interface NotificationResponse {
   id: number;
   actorUsername: string;
-  actorAvatar: string;
   type: 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'POST_MENTIONED';
   message: string;
   postId?: number;
@@ -131,7 +126,6 @@ export interface NotificationResponse {
 export interface SearchResponse {
   id: number;
   username: string;
-  avatar: string;
 }
 
 export interface SearchRequest {

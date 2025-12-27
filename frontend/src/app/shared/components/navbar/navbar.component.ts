@@ -27,7 +27,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   protected readonly unreadCount = signal(0);
   protected readonly notifications = signal<NotificationResponse[]>([]);
   protected readonly loadingNotifications = signal(false);
-  protected readonly failedAvatars = signal<Set<string>>(new Set());
   protected readonly mobileMenuOpen = signal(false);
   private pollSubscription?: Subscription;
   protected readonly userQuery = signal('');
@@ -96,28 +95,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   getUserInitial(): string {
     const user = this.authService.currentUser();
     return user?.username?.charAt(0).toUpperCase() || 'U';
-  }
-
-  getAvatarUrl(): string {
-    const user = this.authService.currentUser();
-    if (!user?.avatar) return '';
-    // If avatar already has full URL, return it; otherwise prepend backend URL
-    if (user.avatar.startsWith('http')) {
-      return user.avatar;
-    }
-    return `${environment.apiUrl}${user.avatar}`;
-  }
-
-  onAvatarError(avatarUrl: string) {
-    const currentFailed = this.failedAvatars();
-    const newFailed = new Set(currentFailed);
-    newFailed.add(avatarUrl);
-    this.failedAvatars.set(newFailed);
-  }
-
-  isAvatarFailed(avatarUrl: string | null | undefined): boolean {
-    if (!avatarUrl) return false;
-    return this.failedAvatars().has(avatarUrl);
   }
 
   ngOnInit() {
@@ -207,22 +184,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return notificationDate.toLocaleDateString();
   }
 
-  protected getNotificationIconSvg(type: string): string {
-    switch (type) {
-      case 'NEW_FOLLOWER':
-        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-      case 'POST_LIKE':
-        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-      case 'POST_COMMENT':
-        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
-      case 'COMMENT_REPLY':
-        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
-      case 'POST_MENTIONED':
-        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h5v-2h-5c-4.34 0-8-3.66-8-8s3.66-8 8-8 8 3.66 8 8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5c1.38 0 2.64-.56 3.54-1.47.65.89 1.77 1.47 2.96 1.47 1.97 0 3.5-1.6 3.5-3.57V12c0-5.52-4.48-10-10-10zm0 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg>';
-      default:
-        return '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>';
-    }
-  }
 
   protected markAllAsRead() {
     this.apiService.markAllNotificationsAsRead().subscribe({

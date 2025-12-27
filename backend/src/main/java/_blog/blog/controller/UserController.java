@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import _blog.blog.dto.SearchResponse;
 import _blog.blog.dto.UpdateProfileRequest;
@@ -44,7 +44,6 @@ public class UserController {
         List<User> users = userService.getUsers();
         List<UserResponse> usersResp = new ArrayList<>();
         for (User u : users) {
-            // Only expose email to the user themselves or admins
             String email = (isAdmin || (currentUser != null && currentUser.getId().equals(u.getId())))
                 ? u.getEmail()
                 : null;
@@ -56,7 +55,6 @@ public class UserController {
                     u.getLastName(),
                     u.getUsername(),
                     email,
-                    u.getAvatar(),
                     u.getRole().toString(),
                     u.isBanned(),
                     u.getSubscriptions().stream()
@@ -74,7 +72,6 @@ public class UserController {
         User currentUser = auth != null ? userService.getUserByUsername(auth.getName()) : null;
         boolean isAdmin = currentUser != null && currentUser.getRole() == Role.ADMIN;
 
-        // Only expose email to the user themselves or admins
         String email = (isAdmin || (currentUser != null && currentUser.getUsername().equals(username)))
             ? user.getEmail()
             : null;
@@ -85,7 +82,6 @@ public class UserController {
             user.getLastName(),
             user.getUsername(),
             email,
-            user.getAvatar(),
             user.getRole().toString(),
             user.isBanned(),
             user.getSubscriptions().stream()
@@ -101,7 +97,6 @@ public class UserController {
         User currentUser = auth != null ? userService.getUserByUsername(auth.getName()) : null;
         boolean isAdmin = currentUser != null && currentUser.getRole() == Role.ADMIN;
 
-        // Only expose email to the user themselves or admins
         String email = (isAdmin || (currentUser != null && currentUser.getId().equals(id)))
             ? user.getEmail()
             : null;
@@ -112,7 +107,6 @@ public class UserController {
             user.getLastName(),
             user.getUsername(),
             email,
-            user.getAvatar(),
             user.getRole().toString(),
             user.isBanned(),
             user.getSubscriptions().stream()
@@ -131,7 +125,6 @@ public class UserController {
             user.getLastName(),
             user.getUsername(),
             user.getEmail(),
-            user.getAvatar(),
             user.getRole().toString(),
             user.isBanned(),
             user.getSubscriptions().stream()
@@ -204,8 +197,7 @@ public class UserController {
             }
             searchResponses.add(new SearchResponse(
                 u.getId(),
-                u.getUsername(),
-                u.getAvatar()
+                u.getUsername()
             ));
         }
         return searchResponses;

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.beans.factory.annotation.Value;
 import _blog.blog.dto.AuthResponse;
 import _blog.blog.dto.ErrorResponse;
 import _blog.blog.dto.LoginRequest;
@@ -33,12 +32,6 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final RateLimiterService rateLimiterService;
 
-    @Value("${app.security.cookie.secure}")
-    private boolean cookieSecure;
-
-    @Value("${app.security.cookie.same-site}")
-    private String cookieSameSite;
-
     public AuthController(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService, RateLimiterService rateLimiterService) {
         this.userService = userService;
         this.jwtService = jwtService;
@@ -48,7 +41,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
-        // ✅ SECURITY FIX: Apply rate limiting to prevent abuse
         String ipAddress = httpRequest.getRemoteAddr();
         Bucket bucket = rateLimiterService.resolveBucket(ipAddress);
 
@@ -57,16 +49,13 @@ public class AuthController {
                 .body(new ErrorResponse("Too many registration attempts. Please try again later."));
         }
 
-        // Save the user
         userService.register(request);
 
-        // Create a LoginRequest from RegisterRequest
         LoginRequest loginRequest = new LoginRequest(
             request.getUsername(),
             request.getPassword()
         );
 
-        // Authenticate
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(),
@@ -81,10 +70,8 @@ public class AuthController {
         .getAuthority();
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
             .httpOnly(true)
-            .secure(cookieSecure) // ✅ FIXED: Now environment-based (true in production)
-            .sameSite(cookieSameSite) // ✅ FIXED: Added SameSite protection (Strict/Lax)
             .path("/")
-            .maxAge(24 * 60 * 60) // 1 day
+            .maxAge(24 * 60 * 60)
             .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -94,7 +81,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse response) {
-        // ✅ SECURITY FIX: Apply rate limiting to prevent brute force attacks
         String ipAddress = httpRequest.getRemoteAddr();
         Bucket bucket = rateLimiterService.resolveBucket(ipAddress);
 
@@ -103,7 +89,6 @@ public class AuthController {
                 .body(new ErrorResponse("Too many login attempts. Please try again later."));
         }
 
-        // First authenticate and check if banned
         var user = userService.authenticate(request);
 
         Authentication authentication = authenticationManager.authenticate(
@@ -117,10 +102,8 @@ public class AuthController {
         .getAuthority();
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
             .httpOnly(true)
-            .secure(cookieSecure) // ✅ FIXED: Now environment-based (true in production)
-            .sameSite(cookieSameSite) // ✅ FIXED: Added SameSite protection (Strict/Lax)
             .path("/")
-            .maxAge(24 * 60 * 60) // 1 day
+            .maxAge(24 * 60 * 60)
             .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -129,13 +112,10 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
-        // Clear the JWT cookie by setting maxAge to 0
         ResponseCookie cookie = ResponseCookie.from("jwt", "")
             .httpOnly(true)
-            .secure(cookieSecure)
-            .sameSite(cookieSameSite)
             .path("/")
-            .maxAge(0) // Expire immediately
+            .maxAge(0)
             .build();
 
         response.addHeader("Set-Cookie", cookie.toString());

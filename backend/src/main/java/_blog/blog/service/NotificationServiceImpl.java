@@ -3,6 +3,7 @@ package _blog.blog.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final SubscriptionService subscriptionService;
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository, UserRepository userRepository, @Lazy SubscriptionService subscriptionService) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
+        this.subscriptionService = subscriptionService;
     }
 
     @Override
@@ -101,6 +104,16 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public void notifyNewPost(User author, Post post) {
+        List<User> followers = subscriptionService.getFollowers(author.getId());
+        String message = author.getUsername() + " published a new post: " + truncate(post.getTitle(), 50);
+
+        for (User follower : followers) {
+            createNotification(follower, author, NotificationType.NEW_POST, message, post, null);
+        }
+    }
+
+    @Override
     public void notifyPostLike(User liker, Post post) {
         String message = liker.getUsername() + " liked your post: " + truncate(post.getTitle(), 50);
         createNotification(post.getAuthor(), liker, NotificationType.POST_LIKE, message, post, null);
@@ -129,7 +142,6 @@ public class NotificationServiceImpl implements NotificationService {
         return NotificationDto.builder()
                 .id(notification.getId())
                 .actorUsername(notification.getActor() != null ? notification.getActor().getUsername() : null)
-                .actorAvatar(notification.getActor() != null ? notification.getActor().getAvatar() : null)
                 .type(notification.getType())
                 .message(notification.getMessage())
                 .postId(notification.getPost() != null ? notification.getPost().getId() : null)

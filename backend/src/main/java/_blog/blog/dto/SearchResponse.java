@@ -12,5 +12,4 @@ import lombok.Setter;
 public class SearchResponse {
     private Long id;
     private String username;
-    private String avatar;
 }
