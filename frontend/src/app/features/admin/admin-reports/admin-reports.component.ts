@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../../core/auth/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReportStatus } from '../../../shared/models/models';
+import { ErrorHandler } from '../../../core/utils/error-handler';
+import { formatDate } from '../../../shared/utils/format.util';
 
 @Component({
   selector: 'app-admin-reports',
@@ -33,8 +35,8 @@ export class AdminReportsComponent implements OnInit {
         this.totalPages.set(response.totalPages || 1);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Failed to load reports');
+      error: (error) => {
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to load reports'));
         this.loading.set(false);
       }
     });
@@ -46,8 +48,8 @@ export class AdminReportsComponent implements OnInit {
         this.notificationService.success('Report handled successfully');
         this.loadReports();
       },
-      error: () => {
-        this.notificationService.error('Failed to handle report');
+      error: (error) => {
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to handle report'));
       }
     });
   }
@@ -60,15 +62,7 @@ export class AdminReportsComponent implements OnInit {
     this.handleReport(reportId, 'REJECTED' as ReportStatus, 'Report rejected by admin');
   }
 
-  formatDate(date: string | Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
+  formatDate = formatDate;
 
   getStatusClass(status: string): string {
     switch(status?.toUpperCase()) {

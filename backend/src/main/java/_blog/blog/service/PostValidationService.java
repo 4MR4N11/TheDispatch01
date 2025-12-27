@@ -93,10 +93,10 @@ public class PostValidationService {
             return; // Admin can access all hidden posts
         }
 
-        // Hidden posts are not accessible to regular users (even post authors)
+        // Hidden posts return 404 to avoid leaking information about their existence
         throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "This post is hidden and only accessible to administrators"
+                HttpStatus.NOT_FOUND,
+                "Post not found"
         );
     }
 }

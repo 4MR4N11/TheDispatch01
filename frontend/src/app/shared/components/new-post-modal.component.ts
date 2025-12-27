@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { environment } from '../../../environments/environment';
+import { ErrorHandler } from '../../core/utils/error-handler';
 
 @Component({
   selector: 'app-new-post-modal',
@@ -132,10 +133,10 @@ export class NewPostModalComponent {
           media_url: fullUrl
         });
       },
-      error: () => {
+      error: (error) => {
         this.uploading.set(false);
         this.creating.set(false);
-        this.notificationService.error('Failed to upload file');
+        this.notificationService.error(ErrorHandler.getUploadErrorMessage(error));
       }
     });
   }
@@ -152,9 +153,9 @@ export class NewPostModalComponent {
         this.postCreated.emit();
         this.closeModal();
       },
-      error: () => {
+      error: (error) => {
         this.creating.set(false);
-        this.notificationService.error('Failed to create post');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to create post'));
       }
     });
   }

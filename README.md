@@ -24,7 +24,7 @@ A full-stack blog platform with a vintage newspaper design. Built with Spring Bo
 
 ## Overview
 
-The Dispatch is a modern blog platform that combines a clean, vintage newspaper aesthetic with powerful content management features. Users can create, publish, and manage blog posts with a rich block editor, interact through comments and likes, and subscribe to their favorite authors.
+The Dispatch is a modern blog platform that combines a clean, vintage newspaper aesthetic with powerful content management features. Users can create, publish, and manage blog posts, interact through comments and likes, subscribe to their favorite authors, and receive real-time notifications.
 
 ---
 
@@ -36,14 +36,15 @@ The Dispatch is a modern blog platform that combines a clean, vintage newspaper 
 |------------|---------|---------|
 | Java | 17 | Runtime environment |
 | Spring Boot | 3.5.6 | REST API framework |
-| Spring Security | - | Authentication & authorization |
-| Spring Data JPA | - | Database ORM |
-| Hibernate | - | Object-relational mapping |
+| Spring Security | 6.4.6 | Authentication & authorization |
+| Spring Data JPA | 3.5.6 | Database ORM |
+| Hibernate | 6.6.4 | Object-relational mapping |
 | PostgreSQL | 16 | Relational database |
 | JWT (JJWT) | 0.12.5 | Token-based authentication |
 | Bucket4j | 8.1.0 | Rate limiting |
-| jsoup | 1.17.2 | HTML sanitization (XSS prevention) |
-| Lombok | - | Boilerplate code reduction |
+| Spring Boot Validation | 3.5.6 | Input validation |
+| Spring Boot Actuator | 3.5.6 | Production monitoring |
+| Lombok | 1.18.38 | Boilerplate code reduction |
 | Maven | 3.9 | Build tool |
 
 ### Frontend
@@ -54,9 +55,9 @@ The Dispatch is a modern blog platform that combines a clean, vintage newspaper 
 | TypeScript | 5.9.2 | Type-safe JavaScript |
 | Angular Material | 20.2.5 | UI component library |
 | Angular CDK | 20.2.5 | Component development kit |
-| Editor.js | 2.31.0 | Block-based content editor |
 | RxJS | 7.8.0 | Reactive programming |
-| Karma/Jasmine | 6.4.0/5.9.0 | Testing framework |
+| Karma | 6.4.0 | Test runner |
+| Jasmine | 5.9.0 | Testing framework |
 
 ### DevOps & Infrastructure
 
@@ -71,7 +72,7 @@ The Dispatch is a modern blog platform that combines a clean, vintage newspaper 
 ## Project Structure
 
 ```
-theDispatch/
+TheDispatch01/
 ├── backend/                    # Spring Boot REST API
 │   ├── src/
 │   │   ├── main/java/_blog/blog/
@@ -101,15 +102,13 @@ theDispatch/
 │   │   │   ├── features/       # Feature modules
 │   │   │   │   ├── admin/
 │   │   │   │   ├── auth/
-│   │   │   │   ├── create-post/
-│   │   │   │   ├── edit-post/
 │   │   │   │   ├── edit-profile/
 │   │   │   │   ├── home/
 │   │   │   │   ├── my-blog/
+│   │   │   │   ├── not-found/
 │   │   │   │   ├── notifications/
 │   │   │   │   ├── posts/
 │   │   │   │   ├── reports/
-│   │   │   │   ├── search/
 │   │   │   │   └── users/
 │   │   │   └── shared/         # Reusable components
 │   │   └── environments/
@@ -320,10 +319,15 @@ docker compose -f docker-compose.prod.yml down
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | GET | `/posts/all` | Get all posts | No |
+| GET | `/posts/feed` | Get paginated feed | Yes |
 | GET | `/posts/post/{id}` | Get post by ID | No |
+| GET | `/posts/{username}` | Get user's posts | No |
+| GET | `/posts/my-posts` | Get current user's posts | Yes |
 | POST | `/posts/create` | Create new post | Yes |
-| PUT | `/posts/{id}` | Update post | Yes (owner) |
-| DELETE | `/posts/{id}` | Delete post | Yes (owner) |
+| PUT | `/posts/{id}` | Update post | Yes (owner/admin) |
+| DELETE | `/posts/{id}` | Delete post | Yes (owner/admin) |
+| PUT | `/posts/hide/{id}` | Hide post | Yes (admin) |
+| PUT | `/posts/unhide/{id}` | Unhide post | Yes (admin) |
 
 ### Users
 
@@ -331,21 +335,40 @@ docker compose -f docker-compose.prod.yml down
 |--------|----------|-------------|------|
 | GET | `/users` | Get all users | No |
 | GET | `/users/me` | Get current user | Yes |
-| PUT | `/users/update` | Update profile | Yes |
+| GET | `/users/{id}` | Get user by ID | No |
+| GET | `/users/username/{username}` | Get user by username | No |
+| GET | `/users/search?q={keyword}` | Search users | Yes |
+| PUT | `/users/update-profile` | Update profile | Yes |
+| POST | `/users/me/delete` | Delete own account | Yes |
+| POST | `/users/delete/{id}` | Delete user | Yes (admin) |
+| POST | `/users/ban/{id}` | Ban user | Yes (admin) |
+| POST | `/users/unban/{id}` | Unban user | Yes (admin) |
+| POST | `/users/promote/{id}` | Promote to admin | Yes (admin) |
 
 ### Comments
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
+| GET | `/comments` | Get all comments | Yes |
 | GET | `/comments/post/{postId}` | Get post comments | No |
-| POST | `/comments/create` | Add comment | Yes |
-| DELETE | `/comments/{id}` | Delete comment | Yes (owner) |
+| POST | `/comments/create/{postId}` | Add comment | Yes |
+| PUT | `/comments/{id}` | Update comment | Yes (owner) |
+| DELETE | `/comments/{id}` | Delete comment | Yes (owner/admin) |
+
+### Likes
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/likes/post/{postId}` | Like post | Yes |
+| DELETE | `/likes/post/{postId}` | Unlike post | Yes |
+| GET | `/likes/post/{postId}/check` | Check if liked | Yes |
 
 ### Notifications
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | GET | `/notifications` | Get user notifications | Yes |
+| GET | `/notifications/unread/count` | Get unread count | Yes |
 | PUT | `/notifications/{id}/read` | Mark as read | Yes |
 
 ### Subscriptions
@@ -353,13 +376,23 @@ docker compose -f docker-compose.prod.yml down
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | POST | `/subscriptions/subscribe/{userId}` | Subscribe to user | Yes |
-| DELETE | `/subscriptions/unsubscribe/{userId}` | Unsubscribe | Yes |
+| POST | `/subscriptions/unsubscribe/{userId}` | Unsubscribe | Yes |
+| GET | `/subscriptions/check/{userId}` | Check if subscribed | Yes |
+
+### Reports
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/reports` | Get all reports | Yes (admin) |
+| POST | `/reports/create` | Create report | Yes |
+| PUT | `/reports/{id}/status` | Update report status | Yes (admin) |
 
 ### File Uploads
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | POST | `/uploads/image` | Upload image | Yes |
+| POST | `/uploads/video` | Upload video | Yes |
 | POST | `/uploads/avatar` | Upload avatar | Yes |
 | GET | `/uploads/**` | Serve uploaded files | No |
 
@@ -371,26 +404,45 @@ docker compose -f docker-compose.prod.yml down
 - User registration and authentication
 - Profile management with avatar upload
 - Subscribe to favorite authors
-- Real-time notifications
+- Real-time notifications for new posts from subscriptions
+- Edit and delete own posts
+- Dark/Light theme toggle
 
 ### Content Features
-- Rich block editor (Editor.js) for creating posts
-- Support for images, headers, lists, and embedded content
-- Draft and publish functionality
-- Comment system with threading
-- Like/unlike posts and comments
+- Create and publish blog posts with media (images/videos)
+- Comment system with edit and delete functionality
+- Like/unlike posts
+- View user profiles and their posts
+- Paginated feed showing posts from subscribed authors
+- Personal blog page showing own posts
 
 ### Admin Features
-- Admin dashboard
-- Content moderation
-- Report management
-- User management
+- Admin dashboard with three sections:
+  - User management (view, delete, ban/unban, promote)
+  - Post management (view all, hide/unhide, delete)
+  - Report management (view, update status)
+- Content moderation (hide/unhide posts)
+- User management (ban/unban accounts)
+- Report reviewing and status updates
+- View all hidden posts
+- Delete any post or comment
+
+### Security Features
+- JWT-based authentication with HttpOnly cookies
+- BCrypt password hashing
+- Role-based authorization (USER/ADMIN)
+- Rate limiting on authentication endpoints
+- Input validation on all endpoints
+- Banned users automatically logged out
+- Hidden posts return 404 (not 403) to prevent information leakage
+- Banned users return 404 to prevent enumeration
 
 ### Design
 - Vintage newspaper aesthetic
 - Dark/Light theme toggle
-- Responsive design
+- Responsive design (mobile, tablet, desktop)
 - Mobile-friendly navigation
+- Clean error notifications (no console spam)
 
 ---
 
@@ -399,24 +451,39 @@ docker compose -f docker-compose.prod.yml down
 ### Authentication
 - JWT-based stateless authentication
 - HttpOnly, Secure, SameSite cookies
-- BCrypt password hashing
+- BCrypt password hashing with salt
 - Rate limiting on auth endpoints (Bucket4j)
+- Automatic logout for banned users
+
+### Authorization
+- Role-based access control (RBAC)
+- Admin-only endpoints protected with `@PreAuthorize`
+- Owner-only operations (edit/delete own posts/comments)
+- Admin can view hidden posts and banned users
 
 ### Input Security
-- HTML sanitization (jsoup) to prevent XSS
+- Input validation on all endpoints (`@Valid`, `@NotNull`, `@NotBlank`)
+- Content trimming to prevent whitespace attacks
 - Path traversal protection for file uploads
-- Input validation on all endpoints
-- SQL injection prevention via JPA/Hibernate
+- SQL injection prevention via JPA/Hibernate parameterized queries
+
+### Information Security
+- Hidden posts return 404 (not 403) to prevent information disclosure
+- Banned users return 404 to prevent enumeration
+- Admin-only visibility for sensitive operations
+- Clean error messages without technical details
 
 ### Transport Security
-- CORS configuration
+- CORS configuration for cross-origin requests
 - Security headers (HSTS, CSP, X-Frame-Options)
 - CSRF protection disabled (stateless JWT)
+- Configurable cookie security (Secure, SameSite)
 
 ### File Upload Security
 - File size limits (100MB max)
-- File type validation
+- File type validation (images and videos)
 - Isolated upload directory
+- Sanitized file paths
 
 ---
 

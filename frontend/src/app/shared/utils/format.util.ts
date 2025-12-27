@@ -5,44 +5,25 @@
 import { environment } from '../../../environments/environment';
 
 /**
- * Convert a date to a relative time string (e.g., "2 hours ago")
+ * Convert a date to a relative time string (e.g., "2h ago", "3d ago")
+ * Uses short format for consistency across the app
  */
 export function getTimeAgo(date: string | Date): string {
   const now = new Date();
   const past = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+  const diffMs = now.getTime() - past.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffInSeconds < 60) {
-    return 'just now';
-  }
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
 
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-  }
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
 
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-  }
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
 
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-  }
-
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  if (diffInWeeks < 4) {
-    return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
-  }
-
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths < 12) {
-    return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
-  }
-
-  const diffInYears = Math.floor(diffInDays / 365);
-  return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`;
+  return past.toLocaleDateString();
 }
 
 /**
@@ -90,4 +71,38 @@ export function validatePassword(password: string): PasswordValidationResult {
     isValid: errors.length === 0,
     errors
   };
+}
+
+export function validateUsername(username: string): boolean {
+  const errors: string[] = [];
+
+  if (!username) {
+    return false;
+  }
+
+  if (username.length < 4 || username.length > 20) {
+    return false;
+  }
+  return true;
+}
+/**
+ * Format a date as a localized string (e.g., "Dec 25, 2024, 3:30 PM")
+ */
+export function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+/**
+ * Get a preview/excerpt from content text
+ */
+export function getContentPreview(content: string, maxLength: number = 200): string {
+  if (!content) return '';
+  if (content.length <= maxLength) return content;
+  return content.substring(0, maxLength) + '...';
 }

@@ -15,13 +15,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     
     List<Post> findAllByAuthorId(Long authorId);
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likedBy WHERE p.id = :postId AND p.hidden = false")
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likedBy WHERE p.id = :postId")
     Optional<Post> findByIdWithLikes(@Param("postId") Long postId);
 
     @Query("SELECT p.id FROM Post p JOIN p.likedBy u WHERE u.id = :userId AND p.hidden = false")
     List<Long> findPostsLikedByUser(@Param("userId") Long userId);
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.comments LEFT JOIN FETCH p.likedBy WHERE p.id = :postId AND p.hidden = false")
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.comments LEFT JOIN FETCH p.likedBy WHERE p.id = :postId")
     Optional<Post> findByIdWithCommentsAndLikes(@Param("postId") Long postId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.comments LEFT JOIN FETCH p.likedBy WHERE p.author.id = :authorId ORDER BY p.createdAt DESC")
@@ -50,5 +50,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         ORDER BY p.createdAt DESC
     """)
     Page<Post> findPostsByAuthorIds(@Param("authorIds") List<Long> authorIds, Pageable pageable);
+
+    // Admin version - includes hidden posts
+    @Query("""
+        SELECT p FROM Post p
+        WHERE p.author.id IN :authorIds
+        ORDER BY p.createdAt DESC
+    """)
+    Page<Post> findPostsByAuthorIdsIncludingHidden(@Param("authorIds") List<Long> authorIds, Pageable pageable);
 }
 

@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ReportResponse } from '../../shared/models/models';
+import { ErrorHandler } from '../../core/utils/error-handler';
+import { formatDate } from '../../shared/utils/format.util';
 
 @Component({
   selector: 'app-reports',
@@ -42,8 +44,8 @@ export class ReportsComponent implements OnInit {
         this.postReports.set(postReps);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Failed to load reports');
+      error: (error) => {
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to load reports'));
         this.loading.set(false);
       }
     });
@@ -68,13 +70,5 @@ export class ReportsComponent implements OnInit {
     }
   }
 
-  formatDate(date: string | Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
+  formatDate = formatDate;
 }

@@ -115,7 +115,7 @@ export interface RegisterRequest {
 export interface NotificationResponse {
   id: number;
   actorUsername: string;
-  type: 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'POST_MENTIONED';
+  type: 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'POST_MENTIONED' | 'NEW_POST';
   message: string;
   postId?: number;
   commentId?: number;

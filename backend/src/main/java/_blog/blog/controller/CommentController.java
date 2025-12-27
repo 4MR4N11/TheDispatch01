@@ -22,6 +22,7 @@ import _blog.blog.dto.CommentResponse;
 import _blog.blog.entity.Comment;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
+import _blog.blog.exception.ForbiddenException;
 import _blog.blog.service.CommentService;
 import _blog.blog.service.PostService;
 import _blog.blog.service.PostValidationService;
@@ -116,7 +117,7 @@ public class CommentController {
         }
 
         if (!existingComment.getAuthor().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).body("You can only edit your own comments");
+            throw new ForbiddenException("You can only edit your own comments");
         }
 
         existingComment.setContent(request.getContent());
@@ -144,7 +145,7 @@ public class CommentController {
 
         if (!comment.getAuthor().getId().equals(user.getId())
                 && !user.getRole().name().equals("ADMIN")) {
-            return ResponseEntity.status(403).body("You can only delete your own comments");
+            throw new ForbiddenException("You can only delete your own comments");
         }
 
         commentService.deleteComment(commentId);

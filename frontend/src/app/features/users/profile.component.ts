@@ -22,6 +22,7 @@ import {
 } from '../../shared/models/models';
 import { environment } from '../../../environments/environment';
 import { NotFoundComponent } from '../not-found/not-found.component';
+import { ErrorHandler } from '../../core/utils/error-handler';
 
 @Component({
   selector: 'app-profile',
@@ -246,9 +247,9 @@ export class ProfileComponent implements OnInit {
         this.notificationService.success('Successfully subscribed!');
         this.refreshProfile();
       },
-      error: () => {
+      error: (error) => {
         this.subscribing.set(false);
-        this.notificationService.error('Failed to subscribe');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to subscribe'));
       },
     });
   }
@@ -265,9 +266,9 @@ export class ProfileComponent implements OnInit {
         this.notificationService.success('Successfully unsubscribed!');
         this.refreshProfile();
       },
-      error: () => {
+      error: (error) => {
         this.subscribing.set(false);
-        this.notificationService.error('Failed to unsubscribe');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to unsubscribe'));
       },
     });
   }
@@ -339,9 +340,9 @@ export class ProfileComponent implements OnInit {
         this.closeReportModal();
         this.notificationService.success('User reported successfully');
       },
-      error: () => {
+      error: (error) => {
         this.reporting.set(false);
-        this.notificationService.error('Failed to report User');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to report user'));
       }
     });
   }
@@ -357,9 +358,9 @@ export class ProfileComponent implements OnInit {
             this.notificationService.success('User deleted successfully');
             this.router.navigate(['/']);
           },
-          error: () => {
+          error: (error) => {
             this.deleting.set(false);
-            this.notificationService.error('Failed to delete user');
+            this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete user'));
           },
         });
       }
@@ -384,9 +385,9 @@ export class ProfileComponent implements OnInit {
             this.loadOtherProfileData(username);
           }
         },
-        error: () => {
+        error: (error) => {
           this.promoting.set(false);
-          this.notificationService.error('Failed to promote user to admin');
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to promote user to admin'));
         },
       });
     }

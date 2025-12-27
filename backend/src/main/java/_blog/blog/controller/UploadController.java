@@ -102,9 +102,9 @@ public class UploadController {
             return ResponseEntity.badRequest().body(Map.of("success", 0, "error", "Invalid video file type"));
         }
 
-        // Validate file size (max 100MB)
+        // Validate file size (max 50MB)
         if (file.getSize() > FileValidator.MAX_VIDEO_SIZE) {
-            return ResponseEntity.badRequest().body(Map.of("success", 0, "error", "Video too large (max 100MB)"));
+            return ResponseEntity.badRequest().body(Map.of("success", 0, "error", "Video too large (max 50MB)"));
         }
 
         // Validate extension

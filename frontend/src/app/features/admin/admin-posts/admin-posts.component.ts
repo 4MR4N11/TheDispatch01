@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../../core/auth/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { PostResponse } from '../../../shared/models/models';
+import { ErrorHandler } from '../../../core/utils/error-handler';
+import { formatDate, getContentPreview } from '../../../shared/utils/format.util';
 
 @Component({
   selector: 'app-admin-posts',
@@ -30,8 +32,8 @@ export class AdminPostsComponent implements OnInit {
         this.posts.set(posts);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Failed to load posts');
+      error: (error) => {
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to load posts'));
         this.loading.set(false);
       }
     });
@@ -44,8 +46,8 @@ export class AdminPostsComponent implements OnInit {
           this.notificationService.success('Post deleted successfully');
           this.loadPosts();
         },
-        error: () => {
-          this.notificationService.error('Failed to delete post');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete post'));
         }
       });
     }
@@ -58,8 +60,8 @@ export class AdminPostsComponent implements OnInit {
           this.notificationService.success('Post hidden successfully');
           this.loadPosts();
         },
-        error: () => {
-          this.notificationService.error('Failed to hide post');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to hide post'));
         }
       });
     }
@@ -72,8 +74,8 @@ export class AdminPostsComponent implements OnInit {
           this.notificationService.success('Post unhidden successfully');
           this.loadPosts();
         },
-        error: () => {
-          this.notificationService.error('Failed to unhide post');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to unhide post'));
         }
       });
     }
@@ -85,25 +87,10 @@ export class AdminPostsComponent implements OnInit {
     }
   }
 
-  formatDate(date: string | Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  getContentPreview(content: string, maxLength: number = 200): string {
-    if (!content) return '';
-    if (content.length <= maxLength) {
-      return content;
-    }
-    return content.substring(0, maxLength) + '...';
-  }
+  formatDate = formatDate;
+  getContentPreview = getContentPreview;
 
   getExcerpt(content: string): string {
-    return this.getContentPreview(content, 200);
+    return getContentPreview(content, 200);
   }
 }

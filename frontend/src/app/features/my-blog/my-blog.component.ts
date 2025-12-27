@@ -8,6 +8,8 @@ import { PostResponse } from '../../shared/models/models';
 import { calculateReadingTime } from '../../shared/utils/reading-time.util';
 import { NewPostModalComponent } from '../../shared/components/new-post-modal.component';
 import { EditPostModalComponent } from '../../shared/components/edit-post-modal.component';
+import { ErrorHandler } from '../../core/utils/error-handler';
+import { getContentPreview } from '../../shared/utils/format.util';
 
 @Component({
   selector: 'app-my-blog',
@@ -51,8 +53,8 @@ export class MyBlogComponent implements OnInit {
         this.calculateStats(posts);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Failed to load posts');
+      error: (error) => {
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to load posts'));
         this.loading.set(false);
       },
     });
@@ -72,12 +74,7 @@ export class MyBlogComponent implements OnInit {
   }
 
   getContentPreview(content: string, maxLength: number = 120): string {
-    if (!content) return '';
-    // Plain text content - just truncate
-    if (content.length <= maxLength) {
-      return content;
-    }
-    return content.substring(0, maxLength) + '...';
+    return getContentPreview(content, maxLength);
   }
 
   viewPost(id: number | undefined) {
@@ -109,8 +106,8 @@ export class MyBlogComponent implements OnInit {
           this.deleting.set(null);
           this.loadMyPosts();
         },
-        error: () => {
-          this.notificationService.error('Failed to delete post');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete post'));
           this.deleting.set(null);
         },
       });

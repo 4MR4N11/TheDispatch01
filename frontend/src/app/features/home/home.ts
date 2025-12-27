@@ -14,6 +14,7 @@ import { environment } from '../../../environments/environment';
 import { NewPostModalComponent } from '../../shared/components/new-post-modal.component';
 import { EditPostModalComponent } from '../../shared/components/edit-post-modal.component';
 import { ErrorHandler } from '../../core/utils/error-handler';
+import { getTimeAgo, getContentPreview, getAuthorInitial } from '../../shared/utils/format.util';
 
 @Component({
   selector: 'app-home',
@@ -247,38 +248,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadFeed();
   }
 
-  getAuthorInitial(author: string): string {
-    return author?.charAt(0).toUpperCase() || 'U';
-  }
-
-  getTimeAgo(date: string | Date): string {
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffMs = now.getTime() - postDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return postDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-
-
-  getContentPreview(content: string, maxLength: number = 200): string {
-    if (!content) return '';
-    // Plain text truncation
-    if (content.length <= maxLength) {
-      return content;
-    }
-    return content.substring(0, maxLength) + '...';
-  }
+  getAuthorInitial = getAuthorInitial;
+  getTimeAgo = getTimeAgo;
+  getContentPreview = getContentPreview;
 
   getExcerpt(content: string): string {
-    return this.getContentPreview(content, 150);
+    return getContentPreview(content, 150);
   }
 
   toggleLike(postId: number, event: Event) {

@@ -3,6 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { NotificationResponse } from '../../shared/models/models';
+import { getTimeAgo } from '../../shared/utils/format.util';
 
 @Component({
   selector: 'app-notifications',
@@ -87,33 +88,19 @@ export class NotificationsComponent implements OnInit {
     // Navigate based on notification type
     if (notification.type === 'NEW_FOLLOWER') {
       this.router.navigate(['/profile', notification.actorUsername]);
-    } else if (notification.type === 'POST_LIKE' || notification.type === 'POST_COMMENT') {
+    } else if (notification.type === 'POST_LIKE' || notification.type === 'POST_COMMENT' || notification.type === 'NEW_POST') {
       if (notification.postId) {
-        this.router.navigate(['/posts', notification.postId]);
+        this.router.navigate(['/post', notification.postId]);
       }
     } else if (notification.type === 'COMMENT_REPLY') {
       if (notification.postId) {
-        this.router.navigate(['/posts', notification.postId]);
+        this.router.navigate(['/post', notification.postId]);
       }
     }
   }
 
 
-  protected getTimeAgo(date: string | Date): string {
-    const now = new Date();
-    const notificationDate = new Date(date);
-    const diffMs = now.getTime() - notificationDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return notificationDate.toLocaleDateString();
-  }
+  protected getTimeAgo = getTimeAgo;
 
   protected goBack() {
     this.router.navigate(['/']);

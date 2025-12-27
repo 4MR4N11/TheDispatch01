@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ErrorHandler } from '../../../core/utils/error-handler';
-import { isValidEmail, validatePassword } from '../../../shared/utils/format.util';
+import { isValidEmail, validatePassword, validateUsername } from '../../../shared/utils/format.util';
 
 @Component({
   selector: 'app-register',
@@ -44,6 +44,11 @@ export class RegisterComponent {
     const passwordValidation = validatePassword(this.password());
     if (!passwordValidation.isValid) {
       this.errorMessage.set(passwordValidation.errors[0]); // Show first error
+      return;
+    }
+
+    if (!validateUsername(this.username())) {
+      this.errorMessage.set('Username must be between 4 and 20 characters');
       return;
     }
 

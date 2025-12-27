@@ -21,6 +21,7 @@ import _blog.blog.dto.UpdateProfileRequest;
 import _blog.blog.dto.UserResponse;
 import _blog.blog.entity.User;
 import _blog.blog.enums.Role;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.service.PostService;
 import _blog.blog.service.UserService;
 import jakarta.validation.Valid;
@@ -44,6 +45,11 @@ public class UserController {
         List<User> users = userService.getUsers();
         List<UserResponse> usersResp = new ArrayList<>();
         for (User u : users) {
+            // Hide banned users from regular users
+            if (u.isBanned() && !isAdmin) {
+                continue;
+            }
+
             String email = (isAdmin || (currentUser != null && currentUser.getId().equals(u.getId())))
                 ? u.getEmail()
                 : null;
@@ -72,6 +78,11 @@ public class UserController {
         User currentUser = auth != null ? userService.getUserByUsername(auth.getName()) : null;
         boolean isAdmin = currentUser != null && currentUser.getRole() == Role.ADMIN;
 
+        // Hide banned users from regular users (return 404 to avoid revealing they exist)
+        if (user.isBanned() && !isAdmin) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
         String email = (isAdmin || (currentUser != null && currentUser.getUsername().equals(username)))
             ? user.getEmail()
             : null;
@@ -96,6 +107,11 @@ public class UserController {
         User user = userService.getUser(id);
         User currentUser = auth != null ? userService.getUserByUsername(auth.getName()) : null;
         boolean isAdmin = currentUser != null && currentUser.getRole() == Role.ADMIN;
+
+        // Hide banned users from regular users (return 404 to avoid revealing they exist)
+        if (user.isBanned() && !isAdmin) {
+            throw new ResourceNotFoundException("User not found");
+        }
 
         String email = (isAdmin || (currentUser != null && currentUser.getId().equals(id)))
             ? user.getEmail()
@@ -137,41 +153,37 @@ public class UserController {
     @PostMapping("/me/delete")
     public ResponseEntity<Map<String, String>> deleteMe(Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
-        if (userService.deleteUser(user.getId())) {
-            return ResponseEntity.ok(Map.of("message", "Your account has been deleted successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        if (!userService.deleteUser(user.getId())) {
+            throw new ResourceNotFoundException("User", user.getId());
         }
+        return ResponseEntity.ok(Map.of("message", "Your account has been deleted successfully!"));
     }
 
     @PostMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
-        if (userService.deleteUser(id)) {
-            return ResponseEntity.ok(Map.of("message", "User deleted successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        if (!userService.deleteUser(id)) {
+            throw new ResourceNotFoundException("User", id);
         }
+        return ResponseEntity.ok(Map.of("message", "User deleted successfully!"));
     }
 
     @PostMapping("/ban/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> banUser(@PathVariable Long id) {
-        if (userService.banUser(id)) {
-            return ResponseEntity.ok(Map.of("message", "User banned successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        if (!userService.banUser(id)) {
+            throw new ResourceNotFoundException("User", id);
         }
+        return ResponseEntity.ok(Map.of("message", "User banned successfully!"));
     }
 
     @PostMapping("/unban/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> unbanUser(@PathVariable Long id) {
-        if (userService.unbanUser(id)) {
-            return ResponseEntity.ok(Map.of("message", "User unbanned successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        if (!userService.unbanUser(id)) {
+            throw new ResourceNotFoundException("User", id);
         }
+        return ResponseEntity.ok(Map.of("message", "User unbanned successfully!"));
     }
 
     @PutMapping("/update-profile")
@@ -191,9 +203,16 @@ public class UserController {
         List<User> users = userService.searchUsers(keyword);
         List<SearchResponse> searchResponses = new ArrayList<>();
         String currentUsername = auth.getName();
+        User currentUser = userService.getUserByUsername(currentUsername);
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+
         for (User u : users) {
             if (u.getUsername().equals(currentUsername)) {
                 continue; // Skip the current user
+            }
+            // Hide banned users from search results for regular users
+            if (u.isBanned() && !isAdmin) {
+                continue;
             }
             searchResponses.add(new SearchResponse(
                 u.getId(),
@@ -205,11 +224,10 @@ public class UserController {
     @PostMapping("/promote/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> promoteToAdmin(@PathVariable Long id) {
-        if (userService.promoteToAdmin(id)) {
-            return ResponseEntity.ok(Map.of("message", "User promoted to admin successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "User not found!"));
+        if (!userService.promoteToAdmin(id)) {
+            throw new ResourceNotFoundException("User", id);
         }
+        return ResponseEntity.ok(Map.of("message", "User promoted to admin successfully!"));
     }
 
 }

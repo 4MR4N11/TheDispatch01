@@ -140,7 +140,7 @@ export class EditProfileComponent implements OnInit {
   deleteAccount() {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       this.loading.set(true);
-      const currentUser = this.authService.getCurrentUser();
+      const currentUser = this.authService.currentUser();
       if (currentUser) {
         this.apiService.deleteMe().subscribe({
           next: () => {

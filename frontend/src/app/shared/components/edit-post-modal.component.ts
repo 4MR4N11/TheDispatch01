@@ -4,6 +4,7 @@ import { ApiService } from '../../core/auth/api.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { PostResponse } from '../../shared/models/models';
 import { environment } from '../../../environments/environment';
+import { ErrorHandler } from '../../core/utils/error-handler';
 
 @Component({
   selector: 'app-edit-post-modal',
@@ -156,10 +157,10 @@ export class EditPostModalComponent implements OnInit {
           media_url: fullUrl
         });
       },
-      error: () => {
+      error: (error) => {
         this.uploading.set(false);
         this.updating.set(false);
-        this.notificationService.error('Failed to upload file');
+        this.notificationService.error(ErrorHandler.getUploadErrorMessage(error));
       }
     });
   }
@@ -178,9 +179,9 @@ export class EditPostModalComponent implements OnInit {
         this.postUpdated.emit();
         this.closeModal();
       },
-      error: () => {
+      error: (error) => {
         this.updating.set(false);
-        this.notificationService.error('Failed to update post');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to update post'));
       }
     });
   }

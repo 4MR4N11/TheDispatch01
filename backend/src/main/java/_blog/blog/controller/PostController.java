@@ -23,6 +23,8 @@ import _blog.blog.dto.PostResponse;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
 import _blog.blog.enums.Role;
+import _blog.blog.exception.ForbiddenException;
+import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.mapper.PostResponseMapper;
 import _blog.blog.service.PostService;
 import _blog.blog.service.PostValidationService;
@@ -59,17 +61,25 @@ public class PostController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<List<PostResponse>> getPostsByUsername(@PathVariable String username) {
-        User user = userService.getUserByUsername(username);
-        // Use getVisiblePostsByIdWithCommentsAndLikes to filter out hidden posts for public view
-        List<Post> posts = postService.getVisiblePostsByIdWithCommentsAndLikes(user.getId());
+    public ResponseEntity<List<PostResponse>> getPostsByUsername(@PathVariable String username, Authentication auth) {
+        User profileUser = userService.getUserByUsername(username);
 
-        // Filter out hidden posts for non-admins (double-check even though service should handle this)
-        List<Post> filteredPosts = posts.stream()
-                .filter(p -> !p.isHidden() || user.getRole() == Role.ADMIN)
-                .toList();
+        // Check if current user is admin
+        boolean isAdmin = false;
+        if (auth != null) {
+            User currentUser = userService.getUserByUsername(auth.getName());
+            isAdmin = currentUser.getRole() == Role.ADMIN;
+        }
 
-        List<PostResponse> respPosts = postResponseMapper.toResponseList(filteredPosts);
+        // Get posts - admins see all, others see only visible posts
+        List<Post> posts;
+        if (isAdmin) {
+            posts = postService.getPostsByIdWithCommentsAndLikes(profileUser.getId());
+        } else {
+            posts = postService.getVisiblePostsByIdWithCommentsAndLikes(profileUser.getId());
+        }
+
+        List<PostResponse> respPosts = postResponseMapper.toResponseList(posts);
         return ResponseEntity.ok(respPosts);
     }
 
@@ -100,13 +110,13 @@ public class PostController {
     public ResponseEntity<String> updatePost(@PathVariable Long id, @Valid @RequestBody PostRequest request, Authentication auth) {
         User user = userService.getUserByUsername(auth.getName());
         Post post = postService.getPostById(id);
+
         if (post.isHidden() && user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(403).body("Cannot edit a hidden post");
+            throw new ResourceNotFoundException("Post not found");
         }
 
-        // Check if the user is the author of the post
-        if (!post.getAuthor().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).body("You are not authorized to edit this post");
+        if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("You are not authorized to edit this post");
         }
 
         postService.updatePost(id, request);
@@ -114,12 +124,20 @@ public class PostController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
+    public ResponseEntity<List<PostResponse>> getAllPosts(Authentication auth) {
         List<Post> posts = postService.getAllPostsWithCommentsAndLikes();
 
+        // Check if current user is admin
+        boolean isAdmin = false;
+        if (auth != null) {
+            User currentUser = userService.getUserByUsername(auth.getName());
+            isAdmin = currentUser.getRole() == Role.ADMIN;
+        }
+
         // Filter out hidden posts for non-admins
+        final boolean adminAccess = isAdmin;
         List<Post> filteredPosts = posts.stream()
-                .filter(p -> !p.isHidden() || p.getAuthor().getRole() == Role.ADMIN)
+                .filter(p -> !p.isHidden() || adminAccess)
                 .toList();
 
         List<PostResponse> respPosts = postResponseMapper.toResponseList(filteredPosts);
@@ -141,7 +159,8 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size
     ) {
         User user = userService.getUserByUsername(auth.getName());
-        Page<Post> postsPage = postService.getFeedPosts(user.getId(), page, size);
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        Page<Post> postsPage = postService.getFeedPosts(user.getId(), page, size, isAdmin);
 
         List<PostResponse> respPosts = postResponseMapper.toResponseList(postsPage.getContent());
 
@@ -162,17 +181,17 @@ public class PostController {
         Post post = postService.getPostById(id);
 
         if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to delete this post"));
+            throw new ForbiddenException("You are not authorized to delete this post");
         }
         if (post.isHidden() && user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(403).body(Map.of("message", "Cannot delete a hidden post"));
+            throw new ResourceNotFoundException("Post not found");
         }
 
-        if (postService.deletePost(id)) {
-            return ResponseEntity.ok(Map.of("message", "Post deleted successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "Post not found!"));
+        if (!postService.deletePost(id)) {
+            throw new ResourceNotFoundException("Post", id);
         }
+
+        return ResponseEntity.ok(Map.of("message", "Post deleted successfully!"));
     }
 
     @PutMapping("/hide/{id}")
@@ -181,14 +200,14 @@ public class PostController {
         Post post = postService.getPostById(id);
 
         if (!post.getAuthor().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to hide this post"));
+            throw new ForbiddenException("You are not authorized to hide this post");
         }
 
-        if (postService.hidePost(id)) {
-            return ResponseEntity.ok(Map.of("message", "Post hidden successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "Post not found!"));
+        if (!postService.hidePost(id)) {
+            throw new ResourceNotFoundException("Post", id);
         }
+
+        return ResponseEntity.ok(Map.of("message", "Post hidden successfully!"));
     }
 
     @PutMapping("/unhide/{id}")
@@ -196,13 +215,13 @@ public class PostController {
         User user = userService.getUserByUsername(auth.getName());
 
         if (user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(403).body(Map.of("message", "You are not authorized to unhide this post"));
+            throw new ForbiddenException("You are not authorized to unhide this post");
         }
 
-        if (postService.unhidePost(id)) {
-            return ResponseEntity.ok(Map.of("message", "Post unhidden successfully!"));
-        } else {
-            return ResponseEntity.status(404).body(Map.of("message", "Post not found!"));
+        if (!postService.unhidePost(id)) {
+            throw new ResourceNotFoundException("Post", id);
         }
+
+        return ResponseEntity.ok(Map.of("message", "Post unhidden successfully!"));
     }
 }

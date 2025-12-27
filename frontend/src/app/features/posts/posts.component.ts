@@ -13,6 +13,8 @@ import { calculateReadingTime } from '../../shared/utils/reading-time.util';
 import { environment } from '../../../environments/environment';
 import { EditPostModalComponent } from '../../shared/components/edit-post-modal.component';
 import { NotFoundComponent } from '../not-found/not-found.component';
+import { ErrorHandler } from '../../core/utils/error-handler';
+import { getTimeAgo, getAuthorInitial } from '../../shared/utils/format.util';
 @Component({
   selector: 'app-post-detail',
   standalone: true,
@@ -106,9 +108,9 @@ export class PostDetailComponent {
           this.notificationService.success('Comment added successfully!');
           this.refreshPost();
         },
-        error: () => {
+        error: (error) => {
           this.submittingComment.set(false);
-          this.notificationService.error('Failed to add comment');
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to add comment'));
         }
       });
   }
@@ -146,9 +148,9 @@ export class PostDetailComponent {
           return p;
         });
       },
-      error: () => {
+      error: (error) => {
         this.togglingLike.set(false);
-        this.notificationService.error('Failed to update like');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to update like'));
       }
     });
   }
@@ -185,9 +187,9 @@ export class PostDetailComponent {
           this.notificationService.success('Comment updated successfully!');
           this.refreshPost();
         },
-        error: () => {
+        error: (error) => {
           this.updatingComment.set(false);
-          this.notificationService.error('Failed to update comment');
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to update comment'));
         }
       });
   }
@@ -200,9 +202,9 @@ export class PostDetailComponent {
         this.notificationService.success('Comment deleted successfully!');
         this.refreshPost();
       },
-      error: () => {
+      error: (error) => {
         this.deletingComment.set(null);
-        this.notificationService.error('Failed to delete comment');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete comment'));
       }
     });
   }
@@ -215,9 +217,9 @@ export class PostDetailComponent {
         this.deletingPost.set(false);
         this.router.navigate(['/']);
       },
-      error: () => {
+      error: (error) => {
         this.deletingPost.set(false);
-        this.notificationService.error('Failed to delete post');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete post'));
       }
     });
   }
@@ -284,9 +286,9 @@ export class PostDetailComponent {
         this.closeReportModal();
         this.notificationService.success('Post reported successfully');
       },
-      error: () => {
+      error: (error) => {
         this.reporting.set(false);
-        this.notificationService.error('Failed to report post');
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to report post'));
       }
     });
   }
@@ -310,22 +312,8 @@ export class PostDetailComponent {
     return post?.author === user?.username;
   }
 
-  getUserInitial(username: string): string {
-    return username?.charAt(0).toUpperCase() || 'U';
-  }
-
-  getTimeAgo(date: string | Date): string {
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffMins = Math.floor((now.getTime() - postDate.getTime()) / 60000);
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return postDate.toLocaleDateString();
-  }
+  getUserInitial = getAuthorInitial;
+  getTimeAgo = getTimeAgo;
 
   viewProfile(username: string) {
     this.router.navigate(['/profile', username]);

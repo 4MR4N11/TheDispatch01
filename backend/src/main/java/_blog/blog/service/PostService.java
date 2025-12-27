@@ -21,6 +21,7 @@ public interface PostService {
     List<Post> getAllPostsWithCommentsAndLikes();
     List<Post> getAllPostsIncludingHidden();
     Page<Post> getFeedPosts(Long userId, int page, int size);
+    Page<Post> getFeedPosts(Long userId, int page, int size, boolean includeHidden);
     List<PostResponse> getPostsRespByUserId(Long userId);
     boolean deletePost(Long postId);
     boolean hidePost(Long postId);

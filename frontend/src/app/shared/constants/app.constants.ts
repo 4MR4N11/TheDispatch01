@@ -6,8 +6,8 @@
  * File size limits (in bytes)
  */
 export const FILE_SIZE_LIMITS = {
-  POST_MEDIA: 10 * 1024 * 1024,  // 10MB
-  AVATAR: 5 * 1024 * 1024,        // 5MB
+  IMAGE: 10 * 1024 * 1024,  // 10MB
+  VIDEO: 50 * 1024 * 1024,  // 50MB
 } as const;
 
 /**

@@ -4,6 +4,8 @@ import { ApiService } from '../../../core/auth/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { UserResponse } from '../../../shared/models/models';
 import { environment } from '../../../../environments/environment';
+import { ErrorHandler } from '../../../core/utils/error-handler';
+import { getAuthorInitial } from '../../../shared/utils/format.util';
 
 @Component({
   selector: 'app-admin-users',
@@ -32,8 +34,8 @@ export class AdminUsersComponent implements OnInit {
         this.users.set(users);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Failed to load users');
+      error: (error) => {
+        this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to load users'));
         this.loading.set(false);
       }
     });
@@ -46,8 +48,8 @@ export class AdminUsersComponent implements OnInit {
           this.notificationService.success('User deleted successfully');
           this.loadUsers();
         },
-        error: () => {
-          this.notificationService.error('Failed to delete user');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to delete user'));
         }
       });
     }
@@ -60,8 +62,8 @@ export class AdminUsersComponent implements OnInit {
           this.notificationService.success('User banned successfully');
           this.loadUsers();
         },
-        error: () => {
-          this.notificationService.error('Failed to ban user');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to ban user'));
         }
       });
     }
@@ -74,8 +76,8 @@ export class AdminUsersComponent implements OnInit {
           this.notificationService.success('User unbanned successfully');
           this.loadUsers();
         },
-        error: () => {
-          this.notificationService.error('Failed to unban user');
+        error: (error) => {
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to unban user'));
         }
       });
     }
@@ -90,9 +92,9 @@ export class AdminUsersComponent implements OnInit {
           this.promoting.set(false);
           this.loadUsers();
         },
-        error: () => {
+        error: (error) => {
           this.promoting.set(false);
-          this.notificationService.error('Failed to promote user to admin');
+          this.notificationService.error(ErrorHandler.getErrorMessage(error, 'Failed to promote user to admin'));
         }
       });
     }
@@ -104,7 +106,5 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
-  getUserInitial(username: string): string {
-    return username?.charAt(0).toUpperCase() || 'U';
-  }
+  getUserInitial = getAuthorInitial;
 }

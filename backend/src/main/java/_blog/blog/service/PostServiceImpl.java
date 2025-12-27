@@ -12,6 +12,7 @@ import _blog.blog.dto.PostRequest;
 import _blog.blog.dto.PostResponse;
 import _blog.blog.entity.Post;
 import _blog.blog.entity.User;
+import _blog.blog.exception.BadRequestException;
 import _blog.blog.exception.ResourceNotFoundException;
 import _blog.blog.mapper.PostMapper;
 import _blog.blog.mapper.PostResponseMapper;
@@ -46,10 +47,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post createPost(PostRequest request, User author) {
         if (request.getTitle() == null || request.getTitle().trim().isBlank()) {
-            throw new IllegalArgumentException("Post title cannot be empty");
+            throw new BadRequestException("Post title cannot be empty");
         }
         if (request.getContent() == null || request.getContent().trim().isBlank()) {
-            throw new IllegalArgumentException("Post content cannot be empty");
+            throw new BadRequestException("Post content cannot be empty");
         }
         Post post = PostMapper.toEntity(request, author);
         Post savedPost = postRepository.save(post);
@@ -66,10 +67,10 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
 
         if (request.getTitle() == null || request.getTitle().trim().isBlank()) {
-            throw new IllegalArgumentException("Post title cannot be empty");
+            throw new BadRequestException("Post title cannot be empty");
         }
         if (request.getContent() == null || request.getContent().trim().isBlank()) {
-            throw new IllegalArgumentException("Post content cannot be empty");
+            throw new BadRequestException("Post content cannot be empty");
         }
 
         post = PostMapper.toEntity(request, post.getAuthor());
@@ -118,13 +119,22 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Page<Post> getFeedPosts(Long userId, int page, int size) {
+        return getFeedPosts(userId, page, size, false);
+    }
+
+    @Override
+    public Page<Post> getFeedPosts(Long userId, int page, int size, boolean includeHidden) {
         List<User> subscriptions = subscriptionService.getSubscriptions(userId);
 
         List<Long> authorIds = new ArrayList<>();
         authorIds.add(userId);
         authorIds.addAll(subscriptions.stream().map(User::getId).toList());
 
-        return postRepository.findPostsByAuthorIds(authorIds, PageRequest.of(page, size));
+        if (includeHidden) {
+            return postRepository.findPostsByAuthorIdsIncludingHidden(authorIds, PageRequest.of(page, size));
+        } else {
+            return postRepository.findPostsByAuthorIds(authorIds, PageRequest.of(page, size));
+        }
     }
 
 

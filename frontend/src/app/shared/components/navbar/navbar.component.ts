@@ -8,6 +8,7 @@ import { ConfirmationModalService } from '../../services/confirmation-modal.serv
 import { ThemeService } from '../../../core/services/theme.service';
 import { interval, Subscription } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { getAuthorInitial, getTimeAgo } from '../../utils/format.util';
 
 @Component({
   selector: 'app-navbar',
@@ -94,8 +95,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   getUserInitial(): string {
     const user = this.authService.currentUser();
-    return user?.username?.charAt(0).toUpperCase() || 'U';
+    return getAuthorInitial(user?.username || '');
   }
+
+  getTimeAgo = getTimeAgo;
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
@@ -157,7 +160,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Navigate based on notification type
     if (notification.type === 'NEW_FOLLOWER') {
       this.router.navigate(['/profile', notification.actorUsername]);
-    } else if (notification.type === 'POST_LIKE' || notification.type === 'POST_COMMENT') {
+    } else if (notification.type === 'POST_LIKE' || notification.type === 'POST_COMMENT' || notification.type === 'NEW_POST') {
       if (notification.postId) {
         this.router.navigate(['/post', notification.postId]);
       }
@@ -167,23 +170,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }
     }
   }
-
-  protected getTimeAgo(date: string | Date): string {
-    const now = new Date();
-    const notificationDate = new Date(date);
-    const diffMs = now.getTime() - notificationDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return notificationDate.toLocaleDateString();
-  }
-
 
   protected markAllAsRead() {
     this.apiService.markAllNotificationsAsRead().subscribe({
