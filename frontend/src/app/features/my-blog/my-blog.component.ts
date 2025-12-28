@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ConfirmationModalService } from '../../shared/services/confirmation-modal.service';
 import { PostResponse } from '../../shared/models/models';
 import { calculateReadingTime } from '../../shared/utils/reading-time.util';
 import { NewPostModalComponent } from '../../shared/components/new-post-modal.component';
@@ -22,6 +23,7 @@ export class MyBlogComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationModalService);
   private readonly router = inject(Router);
 
   protected readonly posts = signal<PostResponse[]>([]);
@@ -94,11 +96,18 @@ export class MyBlogComponent implements OnInit {
     }
   }
 
-  deletePost(id: number | undefined, event: Event) {
+  async deletePost(id: number | undefined, event: Event) {
     event.stopPropagation();
     if (!id) return;
 
-    if (confirm('Are you sure you want to delete this post?')) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Delete Post',
+      message: 'Are you sure you want to delete this post?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.deleting.set(id);
       this.apiService.deletePost(id).subscribe({
         next: () => {

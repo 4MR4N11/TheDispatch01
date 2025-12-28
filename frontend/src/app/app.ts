@@ -6,12 +6,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from './core/auth/auth.service';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { NotificationsComponent } from './shared/components/notifications/notifications.component';
-import { ConfirmationModalComponent } from './shared/components/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, NotificationsComponent, ConfirmationModalComponent],
+  imports: [RouterOutlet, NavbarComponent, NotificationsComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

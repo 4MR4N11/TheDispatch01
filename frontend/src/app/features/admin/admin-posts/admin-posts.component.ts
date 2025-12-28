@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/auth/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmationModalService } from '../../../shared/services/confirmation-modal.service';
 import { PostResponse } from '../../../shared/models/models';
 import { ErrorHandler } from '../../../core/utils/error-handler';
 import { formatDate, getContentPreview } from '../../../shared/utils/format.util';
@@ -16,6 +17,7 @@ import { formatDate, getContentPreview } from '../../../shared/utils/format.util
 export class AdminPostsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly notificationService = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationModalService);
   private readonly router = inject(Router);
 
   protected readonly posts = signal<PostResponse[]>([]);
@@ -39,8 +41,15 @@ export class AdminPostsComponent implements OnInit {
     });
   }
 
-  deletePost(postId: number) {
-    if (confirm('Are you sure you want to delete this post?')) {
+  async deletePost(postId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Delete Post',
+      message: 'Are you sure you want to delete this post?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.deletePost(postId).subscribe({
         next: () => {
           this.notificationService.success('Post deleted successfully');
@@ -53,8 +62,15 @@ export class AdminPostsComponent implements OnInit {
     }
   }
 
-  hidePost(postId: number) {
-    if (confirm('Are you sure you want to hide this post?')) {
+  async hidePost(postId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Hide Post',
+      message: 'Are you sure you want to hide this post?',
+      confirmText: 'Hide',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.hidePost(postId).subscribe({
         next: () => {
           this.notificationService.success('Post hidden successfully');
@@ -67,8 +83,15 @@ export class AdminPostsComponent implements OnInit {
     }
   }
 
-  unhidePost(postId: number) {
-    if (confirm('Are you sure you want to unhide this post?')) {
+  async unhidePost(postId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Unhide Post',
+      message: 'Are you sure you want to unhide this post?',
+      confirmText: 'Unhide',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.unhidePost(postId).subscribe({
         next: () => {
           this.notificationService.success('Post unhidden successfully');

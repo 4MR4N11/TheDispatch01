@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../core/auth/api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ConfirmationModalService } from '../../shared/services/confirmation-modal.service';
 import { PostResponse } from '../../shared/models/models';
 import { calculateReadingTime } from '../../shared/utils/reading-time.util';
 import { environment } from '../../../environments/environment';
@@ -29,6 +30,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationModalService);
 
   protected readonly posts = signal<PostResponse[]>([]);
   protected readonly currentUser = this.authService.currentUser;
@@ -88,9 +90,17 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  deletePost(postId: number, event: Event) {
+  async deletePost(postId: number, event: Event) {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this post?')) {
+
+    const confirmed = await this.confirmationService.open({
+      title: 'Delete Post',
+      message: 'Are you sure you want to delete this post?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.deletePost(postId).subscribe({
         next: () => {
           this.notificationService.success('Post deleted successfully');

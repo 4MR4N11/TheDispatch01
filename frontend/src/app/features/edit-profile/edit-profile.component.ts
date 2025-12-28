@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/auth/api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ConfirmationModalService } from '../../shared/services/confirmation-modal.service';
 import { ErrorHandler } from '../../core/utils/error-handler';
 import { environment } from '../../../environments/environment';
 
@@ -19,6 +20,7 @@ export class EditProfileComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationModalService);
   private readonly router = inject(Router);
 
   protected readonly loading = signal(false);
@@ -137,8 +139,15 @@ export class EditProfileComponent implements OnInit {
     this.router.navigate(['/profile', this.originalUsername]);
   }
 
-  deleteAccount() {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+  async deleteAccount() {
+    const confirmed = await this.confirmationService.open({
+      title: 'Delete Account',
+      message: 'Are you sure you want to delete your account? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.loading.set(true);
       const currentUser = this.authService.currentUser();
       if (currentUser) {

@@ -16,6 +16,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../core/auth/api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ConfirmationModalService } from '../../shared/services/confirmation-modal.service';
 import {
   UserResponse,
   PostResponse,
@@ -36,6 +37,7 @@ export class ProfileComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationModalService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -347,10 +349,17 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  deleteUser() {
+  async deleteUser() {
     const userId = this.user()?.id;
     if (userId && this.isAdmin()) {
-      if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      const confirmed = await this.confirmationService.open({
+        title: 'Delete User',
+        message: 'Are you sure you want to delete this user? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      });
+
+      if (confirmed) {
         this.deleting.set(true);
         this.apiService.deleteUser(userId).subscribe({
           next: () => {

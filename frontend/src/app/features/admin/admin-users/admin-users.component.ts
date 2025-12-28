@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/auth/api.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmationModalService } from '../../../shared/services/confirmation-modal.service';
 import { UserResponse } from '../../../shared/models/models';
 import { environment } from '../../../../environments/environment';
 import { ErrorHandler } from '../../../core/utils/error-handler';
@@ -17,6 +18,7 @@ import { getAuthorInitial } from '../../../shared/utils/format.util';
 export class AdminUsersComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly notificationService = inject(NotificationService);
+  private readonly confirmationService = inject(ConfirmationModalService);
   private readonly router = inject(Router);
 
   protected readonly users = signal<UserResponse[]>([]);
@@ -41,8 +43,15 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  deleteUser(userId: number) {
-    if (confirm('Are you sure you want to delete this user?')) {
+  async deleteUser(userId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Delete User',
+      message: 'Are you sure you want to delete this user?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.deleteUser(userId).subscribe({
         next: () => {
           this.notificationService.success('User deleted successfully');
@@ -55,8 +64,15 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
-  banUser(userId: number) {
-    if (confirm('Are you sure you want to ban this user?')) {
+  async banUser(userId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Ban User',
+      message: 'Are you sure you want to ban this user?',
+      confirmText: 'Ban',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.banUser(userId).subscribe({
         next: () => {
           this.notificationService.success('User banned successfully');
@@ -69,8 +85,15 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
-  unbanUser(userId: number) {
-    if (confirm('Are you sure you want to unban this user?')) {
+  async unbanUser(userId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Unban User',
+      message: 'Are you sure you want to unban this user?',
+      confirmText: 'Unban',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.apiService.unbanUser(userId).subscribe({
         next: () => {
           this.notificationService.success('User unbanned successfully');
@@ -83,8 +106,15 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
-  promoteToAdmin(userId: number) {
-    if (confirm('Are you sure you want to promote this user to admin?')) {
+  async promoteToAdmin(userId: number) {
+    const confirmed = await this.confirmationService.open({
+      title: 'Promote to Admin',
+      message: 'Are you sure you want to promote this user to admin?',
+      confirmText: 'Promote',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
       this.promoting.set(true);
       this.apiService.promoteToAdmin(userId).subscribe({
         next: () => {

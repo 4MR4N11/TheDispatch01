@@ -1326,3 +1326,34 @@ html, body {
 body {
   margin: 0;
 }
+
+/* ===================================
+   MATERIAL DIALOG - VINTAGE NEWSPAPER THEME
+   =================================== */
+
+/* Dialog Backdrop - Dark Overlay */
+.cdk-overlay-dark-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Dialog Container - Vintage Newspaper Border */
+.cdk-overlay-pane .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--color-bg-primary);
+  --mdc-dialog-container-shape: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 3px double var(--color-text-primary);
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* Remove default Material padding */
+.mat-mdc-dialog-container .mat-mdc-dialog-surface {
+  padding: 0;
+  border-radius: 0;
+  background: var(--color-bg-primary);
+}
+
+/* Dark Mode Support */
+:root[data-theme="dark"] .cdk-overlay-pane .mat-mdc-dialog-container {
+  border-color: var(--color-primary);
+}
