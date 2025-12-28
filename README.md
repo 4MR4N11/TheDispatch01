@@ -63,9 +63,8 @@ The Dispatch is a modern blog platform that combines a clean, vintage newspaper 
 
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Docker | - | Containerization |
-| Docker Compose | 3.8 | Multi-container orchestration |
-| Nginx | Alpine | Production reverse proxy |
+| Docker | Latest | Containerization |
+| Docker Compose | 3.8+ | Multi-container orchestration |
 
 ---
 
@@ -93,6 +92,7 @@ TheDispatch01/
 │   ├── uploads/                # File storage directory
 │   ├── Dockerfile
 │   ├── pom.xml
+│   ├── .env.example            # Environment variables template (manual setup)
 │   └── mvnw                    # Maven wrapper
 │
 ├── frontend/                   # Angular SPA
@@ -114,16 +114,14 @@ TheDispatch01/
 │   │   └── environments/
 │   ├── public/
 │   ├── Dockerfile
-│   ├── Dockerfile.prod
-│   ├── nginx.conf
 │   ├── angular.json
 │   └── package.json
 │
-├── docker-compose.yml          # Development setup
-├── docker-compose.prod.yml     # Production setup
+├── docker-compose.yml          # Docker orchestration
 ├── run.sh                      # Automated startup script
-├── .env.example
-└── README.md
+├── .env.example                # Environment variables template
+├── .env                        # Environment variables (generated)
+└── README.md                   # Project documentation
 ```
 
 ---
@@ -141,10 +139,12 @@ TheDispatch01/
 
 ## Quick Start
 
-The easiest way to run the project is using the provided startup script:
+### Option 1: Using the Startup Script (Recommended)
+
+The easiest way to run the project:
 
 ```bash
-# Make the script executable
+# Make the script executable (first time only)
 chmod +x run.sh
 
 # Run the application
@@ -152,11 +152,22 @@ chmod +x run.sh
 ```
 
 The script will:
-1. Check Docker installation
-2. Generate a JWT secret key
-3. Build and start all containers
-4. Wait for services to be healthy
-5. Display access URLs
+1. Generate a JWT secret key if `.env` doesn't exist
+2. Build and start all Docker containers
+3. Display access URLs
+
+### Option 2: Using Docker Compose Directly
+
+```bash
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
 
 Once started, access the application at:
 - **Frontend:** http://localhost:4200
@@ -165,102 +176,83 @@ Once started, access the application at:
 
 ---
 
-## Manual Setup
+## Manual Setup (Without Docker)
 
-### Backend Setup
+If you prefer to run the application without Docker:
 
-1. **Navigate to the backend directory:**
-   ```bash
-   cd backend
-   ```
+### 1. Database Setup
 
-2. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+# Create PostgreSQL database
+createdb blog
 
-3. **Edit `.env` with your configuration:**
-   ```env
-   DB_URL=jdbc:postgresql://localhost:5432/blog
-   DB_USERNAME=blog
-   DB_PASSWORD=blog
-   JWT_SECRET_KEY=your-secret-key-min-32-characters
-   JWT_EXPIRATION=3600000
-   ```
+# Or using psql:
+psql -U postgres -c "CREATE DATABASE blog;"
+```
 
-4. **Create the database:**
-   ```bash
-   createdb blog
-   ```
+### 2. Backend Setup
 
-5. **Build and run:**
-   ```bash
-   # Using Maven wrapper
-   ./mvnw clean install
-   ./mvnw spring-boot:run
+```bash
+cd backend
 
-   # Or using installed Maven
-   mvn clean install
-   mvn spring-boot:run
-   ```
+# Copy environment variables template
+cp .env.example .env
 
-The backend will start on http://localhost:8080
+# Edit .env and set your JWT secret:
+# JWT_SECRET_KEY=your-secret-key-min-32-characters (generate with: openssl rand -base64 32)
 
-### Frontend Setup
+# Build and run (using Maven wrapper)
+./mvnw clean install
+./mvnw spring-boot:run
+```
 
-1. **Navigate to the frontend directory:**
-   ```bash
-   cd frontend
-   ```
+The backend will start on **http://localhost:8080**
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### 3. Frontend Setup
 
-3. **Start the development server:**
-   ```bash
-   npm start
-   # or
-   ng serve
-   ```
+```bash
+cd frontend
 
-The frontend will start on http://localhost:4200
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+The frontend will start on **http://localhost:4200**
 
 ---
 
-## Docker Deployment
+## Docker Commands
 
-### Development
+Useful Docker commands for managing the application:
 
 ```bash
 # Start all services
 docker compose up
 
-# Start in detached mode
+# Start in detached mode (background)
 docker compose up -d
 
 # View logs
 docker compose logs -f
 
+# View logs for specific service
+docker compose logs -f backend
+docker compose logs -f frontend
+
 # Stop services
 docker compose down
 
-# Stop and remove volumes
+# Stop and remove all data (including database)
 docker compose down -v
-```
 
-### Production
+# Rebuild containers after code changes
+docker compose up --build
 
-```bash
-# Start production stack
-docker compose -f docker-compose.prod.yml up -d
-
-# View logs
-docker compose -f docker-compose.prod.yml logs -f
-
-# Stop services
-docker compose -f docker-compose.prod.yml down
+# Restart a specific service
+docker compose restart backend
 ```
 
 ### Docker Services
@@ -269,38 +261,40 @@ docker compose -f docker-compose.prod.yml down
 |---------|------|-------------|
 | postgres | 5432 | PostgreSQL database |
 | backend | 8080 | Spring Boot API |
-| frontend | 4200 (dev) / 80 (prod) | Angular application |
+| frontend | 4200 | Angular development server |
 
 ---
 
 ## Environment Variables
 
-### Root `.env`
+### Root `.env` (for Docker)
+
+Only one environment variable is needed in the root `.env` file:
+
+| Variable | Description | How to Generate |
+|----------|-------------|-----------------|
+| `JWT_SECRET_KEY` | Secret key for JWT token signing | `openssl rand -base64 32` |
+
+The `run.sh` script automatically generates this file if it doesn't exist.
+
+**Note:** Database credentials are hardcoded in `docker-compose.yml` for development simplicity:
+- Database: `blog`
+- Username: `blog`
+- Password: `blog`
+
+### Backend `.env` (for manual setup without Docker)
+
+When running without Docker, copy `backend/.env.example` to `backend/.env` and configure:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `JWT_SECRET_KEY` | - | Secret key for JWT signing (min 32 chars) |
-| `POSTGRES_DB` | blog | Database name |
-| `POSTGRES_USER` | blog | Database username |
-| `POSTGRES_PASSWORD` | blog | Database password |
-| `COOKIE_SECURE` | false | Set to true in production (HTTPS) |
-| `COOKIE_SAME_SITE` | Lax | Cookie SameSite policy |
-| `LOG_LEVEL_WEB` | INFO | Spring web logging level |
-| `LOG_LEVEL_SECURITY` | INFO | Spring security logging level |
-| `LOG_LEVEL_APP` | INFO | Application logging level |
-| `SHOW_SQL` | true | Show SQL queries in logs |
-| `FORMAT_SQL` | true | Format SQL queries in logs |
-| `FRONTEND_URL` | http://localhost:4200 | Frontend URL for CORS |
-
-### Backend `.env`
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DB_URL` | jdbc:postgresql://localhost:5432/blog | Database JDBC URL |
-| `DB_USERNAME` | blog | Database username |
-| `DB_PASSWORD` | blog | Database password |
-| `JWT_SECRET_KEY` | - | JWT signing secret |
-| `JWT_EXPIRATION` | 3600000 | JWT expiration (ms) - 1 hour |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/blog` | Database JDBC URL |
+| `DB_USERNAME` | `blog` | Database username |
+| `DB_PASSWORD` | `blog` | Database password |
+| `JWT_SECRET_KEY` | - | JWT signing secret (generate with: `openssl rand -base64 32`) |
+| `JWT_EXPIRATION` | `3600000` | JWT expiration in milliseconds (1 hour) |
+| `SHOW_SQL` | `true` | Show SQL queries in logs |
+| `FORMAT_SQL` | `true` | Format SQL queries in logs |
 
 ---
 
