@@ -70,7 +70,6 @@ public class AuthController {
         .getAuthority();
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
             .httpOnly(true)
-            .sameSite("Lax")
             .path("/")
             .maxAge(24 * 60 * 60)
             .build();
@@ -103,7 +102,6 @@ public class AuthController {
         .getAuthority();
         ResponseCookie cookie = ResponseCookie.from("jwt", token)
             .httpOnly(true)
-            .sameSite("Lax")
             .path("/")
             .maxAge(24 * 60 * 60)
             .build();
@@ -116,7 +114,6 @@ public class AuthController {
     public ResponseEntity<String> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("jwt", "")
             .httpOnly(true)
-            .sameSite("Lax")
             .path("/")
             .maxAge(0)
             .build();
